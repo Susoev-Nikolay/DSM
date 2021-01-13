@@ -19,33 +19,59 @@ namespace Dsm3
         int[,] main, temp;
         double[,] per;
         int[] pert;
+
+        static int MAX_O = 2; //TODO rename
+
+        //TODO initiliazie road info in one method to all buttons
+
+        //TODO fix
+        private int [,] createRoadLanes() 
+        {
+            // for (int o = 1; o < MAX_O; o++)//цикл для выделенной полосы
+            // {
+            //     for (int i = 0; i < publicTransportAmount; i++)
+            //     {
+            //         for (int k = 0; k < 2; k++)
+            //         {
+            //             main[tb + k, o] = numb;
+            //             main[tb + k, o] = numb;
+            //         }
+            //         int dstL2 = rnd.Next(3, maxdstB + 1);
+            //         tb = tb + dstL2;
+            //         numb++;
+            //     }
+            //     tb = 0;
+            // }
+        }
+
         private void button1_Click(object sender, EventArgs e)
         {
             Random rnd = new Random();
             int P = Convert.ToInt32(textBox1.Text);
-            int M = Convert.ToInt32(textBox1.Text)+2;//полосы
-            int N = Convert.ToInt32(textBox2.Text) / 5;//длина
+            int roadLanesCount = Convert.ToInt32(textBox1.Text)+2;
+            int roadLength = Convert.ToInt32(textBox2.Text) / 5;
             double rho = Convert.ToDouble(textBox3.Text);//плотность
             double mu = Convert.ToDouble(textBox5.Text);//мю
             int v = Convert.ToInt32(textBox4.Text);
-            int carsL = Convert.ToInt32(Math.Round(N / 2 * rho));
-            int maxdstL = Convert.ToInt32(N / carsL);
-            int carsB = Convert.ToInt32(Math.Round(N / 4 * rho));
-            int maxdstB = Convert.ToInt32(N / carsB);
+            int carsL = Convert.ToInt32(Math.Round(roadLength / 2 * rho));
+            int maxdstL = Convert.ToInt32(roadLength / carsL);
+            int publicTransportAmount = Convert.ToInt32(Math.Round(roadLength / 4 * rho));
+            int maxdstB = Convert.ToInt32(roadLength / publicTransportAmount);
             var rand = new Random();
-            main = new int[N+1, M];
+            main = new int[roadLength+1, roadLanesCount];
             int numb = 2;
 
             int t = 2;
             int tb = 3;
-            for (int i = 0; i < N; i++)
+            for (int i = 0; i < roadLength; i++)
             {
                 main[i, 0] = 1;
-                main[i, M-1] = 1;
+                main[i, roadLanesCount-1] = 1;
             }
+            //TODO replace cycle to main = createRoadLanes();
             for (int o = 1; o < 2; o++)//цикл для выделенной полосы
             {
-                for (int i = 0; i < carsB; i++)
+                for (int i = 0; i < publicTransportAmount; i++)
                 {
                     for (int k = 0; k < 2; k++)
                     {
@@ -59,7 +85,7 @@ namespace Dsm3
                 tb = 0;
             }
 
-            for (int o = 2; o < M-1; o++)//легковые машины
+            for (int o = 2; o < roadLanesCount-1; o++)//легковые машины
             {
                 for (int i = 0; i < carsL; i++)
                 {
@@ -76,12 +102,12 @@ namespace Dsm3
                 t = 0;
             }
 
-            per = new double[carsB + carsL * (P - 1), 3];
-            for (int i = 0; i < carsB + carsL * (P - 1); i++)
+            per = new double[publicTransportAmount + carsL * (P - 1), 3];
+            for (int i = 0; i < publicTransportAmount + carsL * (P - 1); i++)
             {
                 per[i, 0] = i + 2;
                 per[i, 1] = Math.Round(-(1 / mu) * Math.Log(rand.NextDouble()));
-                if (i < carsB)
+                if (i < publicTransportAmount)
                 {
                     per[i, 2] = 1;
                 }
@@ -124,40 +150,40 @@ namespace Dsm3
             for (int u = 0; u < Convert.ToInt32(textBox6.Text); u++)
             {
                 int P = Convert.ToInt32(textBox1.Text);
-                int M = Convert.ToInt32(textBox1.Text) + 2;//полосы
-                int N = Convert.ToInt32(textBox2.Text) / 5;//длина
+                int roadLanesCount = Convert.ToInt32(textBox1.Text) + 2;//полосы
+                int roadLength = Convert.ToInt32(textBox2.Text) / 5;//длина
                 double rho = Convert.ToDouble(textBox3.Text);//плотность
                 double mu = Convert.ToDouble(textBox5.Text);//мю
                 int v = Convert.ToInt32(textBox4.Text) / 5;
-                int carsL = Convert.ToInt32(Math.Round(N / 2 * rho));
-                int maxdstL = Convert.ToInt32(N / carsL);
-                int carsB = Convert.ToInt32(Math.Round(N / 4 * rho));
-                int maxdstB = Convert.ToInt32(N / carsB);
+                int carsL = Convert.ToInt32(Math.Round(roadLength / 2 * rho));
+                int maxdstL = Convert.ToInt32(roadLength / carsL);
+                int publicTransportAmount = Convert.ToInt32(Math.Round(roadLength / 4 * rho));
+                int maxdstB = Convert.ToInt32(roadLength / publicTransportAmount);
                 var rand = new Random();
                 int t = 0;
-                int g = 0;
+                int publicTransportCounter = 0;
                 int a = 0;
-                pert = new int[carsB + carsL * (P - 1)];
+                pert = new int[publicTransportAmount + carsL * (P - 1)];
 
                 for (int i = 0; i < pert.Length; i++)
                 {
                     pert[i] = Convert.ToInt32(per[i, 0]);
                 }
 
-                int[,] temp2 = new int[N, M];
-                for (int i = 0; i < N; i++)
+                int[,] temp2 = new int[roadLength, roadLanesCount];
+                for (int i = 0; i < roadLength; i++)
                 {
                     temp2[i, 0] = 1;
-                    temp2[i, M - 1] = 1;
+                    temp2[i, roadLanesCount - 1] = 1;
                 }
 
-                for (int i = 0; i < N; i++)
+                for (int i = 0; i < roadLength; i++)
                 {
-                    for (int j = 0; j < M; j++)
+                    for (int j = 0; j < roadLanesCount; j++)
                     {
-                        if (i < N - v - 1)
+                        if (i < roadLength - v - 1)
                         {
-                            if (temp[N - 1, j] == temp[0, j])
+                            if (temp[roadLength - 1, j] == temp[0, j])
                             {
                                 temp[1, j] = temp[0, j];
                             }
@@ -172,7 +198,7 @@ namespace Dsm3
                                         temp2[i + v + 1, j + 1] = Convert.ToInt32(per[t, 0]);
                                         temp2[i + v + 1, j] = 0;
                                         per[t, 1] = Math.Round(-(1 / mu) * Math.Log(rand.NextDouble()));
-                                        g = g + 1;
+                                        publicTransportCounter++;
                                     }
                                     else if (temp[i, j - 1] == 0 && temp[i + 1, j - 1] == 0 && temp[i + v, j - 1] == 0 && temp[i + v + 1, j - 1] == 0)
                                     {
@@ -180,7 +206,7 @@ namespace Dsm3
                                         temp2[i + v + 1, j - 1] = Convert.ToInt32(per[t, 0]);
                                         temp2[i + v + 1, j] = 0;
                                         per[t, 1] = Math.Round(-(1 / mu) * Math.Log(rand.NextDouble()));
-                                        g = g + 1;
+                                        publicTransportCounter++;
                                     }
                                     else
                                     {
@@ -242,22 +268,22 @@ namespace Dsm3
                             }
                         }
                         ////////////////////////////////////////////////////////////////////////////////////////////////
-                        if (i == N - v - 1)
+                        if (i == roadLength - v - 1)
                         {
-                            temp2[N - 1, j] = temp[i, j];
+                            temp2[roadLength - 1, j] = temp[i, j];
                         }
-                        if (i == N - v)
+                        if (i == roadLength - v)
                         {
-                            temp2[0, j] = temp[N - v, j];
+                            temp2[0, j] = temp[roadLength - v, j];
                         }
-                        if (i == N - v + 1)
+                        if (i == roadLength - v + 1)
                         {
-                            temp2[1, j] = temp[N - v + 1, j];
+                            temp2[1, j] = temp[roadLength - v + 1, j];
                         }
                     }
                 }
 
-                textBox7.Text = textBox7.Text + ";" + Convert.ToString(g);
+                textBox7.Text = textBox7.Text + ";" + Convert.ToString(publicTransportCounter);
                 textBox8.Text = textBox8.Text + ";" + Convert.ToString(a);
 
                 temp = temp2;
@@ -295,40 +321,40 @@ namespace Dsm3
             dataGridView2.Rows.Clear();
 
             int P = Convert.ToInt32(textBox1.Text);
-            int M = Convert.ToInt32(textBox1.Text)+2;//полосы
-            int N = Convert.ToInt32(textBox2.Text) / 5;//длина
+            int roadLanesCount = Convert.ToInt32(textBox1.Text)+2;
+            int roadLength = Convert.ToInt32(textBox2.Text) / 5;
             double rho = Convert.ToDouble(textBox3.Text);//плотность
             double mu = Convert.ToDouble(textBox5.Text);//мю
             int v = Convert.ToInt32(textBox4.Text) / 5;
-            int carsL = Convert.ToInt32(Math.Round(N / 2 * rho));
-            int maxdstL = Convert.ToInt32(N / carsL);
-            int carsB = Convert.ToInt32(Math.Round(N / 4 * rho));
-            int maxdstB = Convert.ToInt32(N / carsB);
+            int carsL = Convert.ToInt32(Math.Round(roadLength / 2 * rho));
+            int maxdstL = Convert.ToInt32(roadLength / carsL);
+            int publicTransportAmount = Convert.ToInt32(Math.Round(roadLength / 4 * rho));
+            int maxdstB = Convert.ToInt32(roadLength / publicTransportAmount);
             var rand = new Random();
             int t  = 0;
-            int g = 0;
+            int publicTransportCounter = 0;
             int a = 0;
-            pert = new int[carsB + carsL * (P - 1)];
+            pert = new int[publicTransportAmount + carsL * (P - 1)];
 
             for (int i = 0; i < pert.Length; i++)
             {
                 pert[i] = Convert.ToInt32(per[i,0]);
             }
 
-            int[,] temp2 = new int[N, M];
-            for (int i = 0; i < N; i++)
+            int[,] temp2 = new int[roadLength, roadLanesCount];
+            for (int i = 0; i < roadLength; i++)
             {
                 temp2[i, 0] = 1;
-                temp2[i, M - 1] = 1;
+                temp2[i, roadLanesCount - 1] = 1;
             }
 
-            for (int i = 0; i < N; i++)
+            for (int i = 0; i < roadLength; i++)
             {
-                for (int j = 0; j < M; j++)
+                for (int j = 0; j < roadLanesCount; j++)
                 {
-                    if (i < N - 1)
+                    if (i < roadLength - 1)
                     {
-                        if (temp[N - 1,j] == temp[0, j])
+                        if (temp[roadLength - 1,j] == temp[0, j])
                         {
                             temp[1, j] = temp[0, j];
                         }
@@ -343,7 +369,7 @@ namespace Dsm3
                                     temp2[i + v + 1, j + 1] = Convert.ToInt32(per[t, 0]);
                                     temp2[i + v + 1, j] = 0;
                                     per[t, 1] = Math.Round(-(1 / mu) * Math.Log(rand.NextDouble()));
-                                    g = g + 1;
+                                    publicTransportCounter++;
                                 }
                                 else if (temp[i, j - 1] == 0 && temp[i + 1, j - 1] == 0 && temp[i + v, j - 1] == 0 && temp[i + v + 1, j - 1] == 0)
                                 {
@@ -351,7 +377,7 @@ namespace Dsm3
                                     temp2[i + v + 1, j - 1] = Convert.ToInt32(per[t, 0]);
                                     temp2[i + v + 1, j] = 0;
                                     per[t, 1] = Math.Round(-(1 / mu) * Math.Log(rand.NextDouble()));
-                                    g = g + 1;
+                                    publicTransportCounter++;
                                 }
                                 else
                                 {
@@ -398,9 +424,9 @@ namespace Dsm3
                         }
                     }
                     ////////////////////////////////////////////////////////////////////////////////////////////////
-                    else if (i == N - 1)
+                    else if (i == roadLength - 1)
                     {
-                        if (temp[N - 1, j] == temp[0, j])
+                        if (temp[roadLength - 1, j] == temp[0, j])
                         {
                             temp[1, j] = temp[0, j];
                         }
@@ -415,7 +441,7 @@ namespace Dsm3
                                     temp2[v + 1, j + 1] = Convert.ToInt32(per[t, 0]);
                                     temp2[v + 1, j] = 0;
                                     per[t, 1] = Math.Round(-(1 / mu) * Math.Log(rand.NextDouble()));
-                                    g = g + 1;
+                                    publicTransportCounter++;
                                 }
                                 else if (temp[i, j - 1] == 0 && temp[0, j - 1] == 0 && temp[v, j - 1] == 0 && temp[v + 1, j - 1] == 0)
                                 {
@@ -423,7 +449,7 @@ namespace Dsm3
                                     temp2[v + 1, j - 1] = Convert.ToInt32(per[t, 0]);
                                     temp2[v + 1, j] = 0;
                                     per[t, 1] = Math.Round(-(1 / mu) * Math.Log(rand.NextDouble()));
-                                    g = g + 1;
+                                    publicTransportCounter++;
                                 }
                                 else
                                 {
@@ -468,7 +494,7 @@ namespace Dsm3
                                     per[t, 1] = Math.Round(-(1 / mu) * Math.Log(rand.NextDouble()));
                             }
                         }
-                        //temp2[0, j] = temp[N-v-1, j];
+                        //temp2[0, j] = temp[roadLength-v-1, j];
                     }
                     else
                     {
@@ -477,7 +503,7 @@ namespace Dsm3
                 }
             }
 
-            label7.Text = label7.Text + " " + Convert.ToString(g);
+            label7.Text = label7.Text + " " + Convert.ToString(publicTransportCounter);
             label8.Text = label8.Text + " " + Convert.ToString(a);
 
             temp = temp2;
