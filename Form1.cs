@@ -59,7 +59,7 @@ namespace Dsm3
             int publicTransportAmount = Convert.ToInt32(Math.Round(roadLength / 4 * rho));
             int maxdstB = Convert.ToInt32(roadLength / publicTransportAmount);
             var rand = new Random();
-            main = new int[roadLength+1, roadLanesCount];
+            main = new int[roadLength, roadLanesCount];
             int numb = 2;
 
             int t = 2;
@@ -182,105 +182,170 @@ namespace Dsm3
                 {
                     for (int j = 0; j < roadLanesCount; j++)
                     {
-                        if (i < roadLength - v - 1)
+                        t = Array.IndexOf(pert, temp[i, j]);
+                        if (t != -1)
                         {
-                            if (temp[roadLength - 1, j] == temp[0, j])
+                            int iplusodin = (i + 1) % temp.GetLength(0);
+                            int iplusv = (i + v) % temp.GetLength(0);
+                            int iplusvplusodin = (i + v + 1) % temp.GetLength(0);
+                            if (temp[i, j] == per[t, 0])
                             {
-                                temp[1, j] = temp[0, j];
+                                if (per[t, 2] == 1)
+                                {
+                                    if (temp[iplusodin, j] == per[t, 0] && per[t, 1] == 0)//если подошло время попытаться перестроиться ГРУЗОВОЙ машине
+                                    {
+                                        if (temp[i, j + 1] == 0 && temp[iplusodin, j + 1] == 0 && temp[iplusv, j + 1] == 0 && temp[iplusvplusodin, j + 1] == 0)
+                                        {
+                                            temp2[iplusv, j + 1] = Convert.ToInt32(per[t, 0]);
+                                            temp2[iplusvplusodin, j + 1] = Convert.ToInt32(per[t, 0]);
+                                            per[t, 1] = Math.Round(-(1 / mu) * Math.Log(rand.NextDouble()));
+                                            publicTransportCounter++;
+                                        }
+                                        else if (temp[i, j - 1] == 0 && temp[iplusodin, j - 1] == 0 && temp[iplusv, j - 1] == 0 && temp[iplusvplusodin, j - 1] == 0)
+                                        {
+                                            temp2[iplusv, j - 1] = Convert.ToInt32(per[t, 0]);
+                                            temp2[iplusvplusodin, j - 1] = Convert.ToInt32(per[t, 0]);
+                                            per[t, 1] = Math.Round(-(1 / mu) * Math.Log(rand.NextDouble()));
+                                            publicTransportCounter++;
+                                        }
+                                        else
+                                        {
+                                            temp2[iplusv, j] = Convert.ToInt32(per[t, 0]);
+                                            temp2[iplusvplusodin, j] = Convert.ToInt32(per[t, 0]);
+                                            per[t, 1] = Math.Round(-(1 / mu) * Math.Log(rand.NextDouble()));
+                                        }
+                                    }
+                                    else if (temp[(i) % temp.GetLength(0), j] == per[t, 0] && temp[iplusodin, j] == per[t, 0])
+                                    {
+                                        temp2[iplusv, j] = Convert.ToInt32(per[t, 0]);
+                                        temp2[iplusvplusodin, j] = Convert.ToInt32(per[t, 0]);
+                                        per[t, 1]--;
+                                        if (per[t, 1] < 0)
+                                            per[t, 1] = Math.Round(-(1 / mu) * Math.Log(rand.NextDouble())); //костыль от -1 по времени
+                                    }
+                                }
+
+                                if (per[t, 2] == 2)
+                                {
+                                    if (per[t, 1] == 0)//если подошло время попытаться перестроиться ЛЕГКОВОВЙ машине
+                                    {
+                                        if (temp[(i) % temp.GetLength(0), j + 1] == 0 && temp[iplusv, j + 1] == 0)
+                                        {
+                                            temp2[iplusv, j + 1] = Convert.ToInt32(per[t, 0]);
+                                            per[t, 1] = Math.Round(-(1 / mu) * Math.Log(rand.NextDouble()));
+                                            a++;
+                                        }
+                                        else if (temp[(i) % temp.GetLength(0), j - 1] == 0 && temp[iplusv, j - 1] == 0)
+                                        {
+                                            temp2[iplusv, j - 1] = Convert.ToInt32(per[t, 0]);
+                                            per[t, 1] = Math.Round(-(1 / mu) * Math.Log(rand.NextDouble()));
+                                            a++;
+                                        }
+                                        else
+                                        {
+                                            temp2[iplusv, j] = Convert.ToInt32(per[t, 0]);
+                                            per[t, 1] = Math.Round(-(1 / mu) * Math.Log(rand.NextDouble()));
+                                        }
+                                    }
+                                    else if (temp[(i) % temp.GetLength(0), j] == per[t, 0])
+                                    {
+                                        temp2[iplusv, j] = Convert.ToInt32(per[t, 0]);
+                                        per[t, 1]--;
+                                        if (per[t, 1] < 0)
+                                            per[t, 1] = Math.Round(-(1 / mu) * Math.Log(rand.NextDouble()));//костыль от -1 по времени
+                                    }
+                                    else
+                                    {
+                                        MessageBox.Show("ЛЕГКОВОВЙ" + (t + 2).ToString());
+                                    }
+                                }
                             }
+                        }
+
+                        ////////////////////////////////////////////////////////////////////////////////////////////////
+                        /*
+                        else if (i == roadLength - 1)
+                        {
                             t = Array.IndexOf(pert, temp[i, j]);
+
                             if (t != -1)
                             {
-                                if (temp[i, j] == per[t, 0] && temp[i + 1, j] == per[t, 0] && per[t, 2] == 1 && per[t, 1] == 0)//если подошло время попытаться перестроиться ГРУЗОВОЙ машине
+                                if (temp[i, j] == per[t, 0])
                                 {
-                                    if (temp[i, j + 1] == 0 && temp[i + 1, j + 1] == 0 && temp[i + v, j + 1] == 0 && temp[i + v + 1, j + 1] == 0)
+                                    if (per[t, 2] == 1)
                                     {
-                                        temp2[i + v, j + 1] = Convert.ToInt32(per[t, 0]);
-                                        temp2[i + v + 1, j + 1] = Convert.ToInt32(per[t, 0]);
-                                        temp2[i + v + 1, j] = 0;
-                                        per[t, 1] = Math.Round(-(1 / mu) * Math.Log(rand.NextDouble()));
-                                        publicTransportCounter++;
+                                        if (temp[i + 1, j] == per[t, 0] && per[t, 1] == 0)//если подошло время попытаться перестроиться ГРУЗОВОЙ машине
+                                        {
+                                            if (temp[i, j + 1] == 0 && temp[i + 1, j + 1] == 0 && temp[i + v, j + 1] == 0 && temp[i + v + 1, j + 1] == 0)
+                                            {
+                                                temp2[i + v, j + 1] = Convert.ToInt32(per[t, 0]);
+                                                temp2[i + v + 1, j + 1] = Convert.ToInt32(per[t, 0]);
+                                                per[t, 1] = Math.Round(-(1 / mu) * Math.Log(rand.NextDouble()));
+                                                publicTransportCounter++;
+                                            }
+                                            else if (temp[i, j - 1] == 0 && temp[i + 1, j - 1] == 0 && temp[i + v, j - 1] == 0 && temp[i + v + 1, j - 1] == 0)
+                                            {
+                                                temp2[i + v, j - 1] = Convert.ToInt32(per[t, 0]);
+                                                temp2[i + v + 1, j - 1] = Convert.ToInt32(per[t, 0]);
+                                                per[t, 1] = Math.Round(-(1 / mu) * Math.Log(rand.NextDouble()));
+                                                publicTransportCounter++;
+                                            }
+                                            else
+                                            {
+                                                temp2[i + v, j] = Convert.ToInt32(per[t, 0]);
+                                                temp2[i + v + 1, j] = Convert.ToInt32(per[t, 0]);
+                                                per[t, 1] = Math.Round(-(1 / mu) * Math.Log(rand.NextDouble()));
+                                            }
+                                        }
+                                        else if (temp[i, j] == per[t, 0] && temp[i + 1, j] == per[t, 0])
+                                        {
+                                            temp2[i + v, j] = Convert.ToInt32(per[t, 0]);
+                                            temp2[i + v + 1, j] = Convert.ToInt32(per[t, 0]);
+                                            per[t, 1]--;
+                                            if (per[t, 1] < 0)
+                                                per[t, 1] = Math.Round(-(1 / mu) * Math.Log(rand.NextDouble())); //костыль от -1 по времени
+                                        }
                                     }
-                                    else if (temp[i, j - 1] == 0 && temp[i + 1, j - 1] == 0 && temp[i + v, j - 1] == 0 && temp[i + v + 1, j - 1] == 0)
-                                    {
-                                        temp2[i + v, j - 1] = Convert.ToInt32(per[t, 0]);
-                                        temp2[i + v + 1, j - 1] = Convert.ToInt32(per[t, 0]);
-                                        temp2[i + v + 1, j] = 0;
-                                        per[t, 1] = Math.Round(-(1 / mu) * Math.Log(rand.NextDouble()));
-                                        publicTransportCounter++;
-                                    }
-                                    else
-                                    {
-                                        temp2[i + v, j] = Convert.ToInt32(per[t, 0]);
-                                        temp2[i + v + 1, j] = Convert.ToInt32(per[t, 0]);
-                                        per[t, 1] = Math.Round(-(1 / mu) * Math.Log(rand.NextDouble()));
-                                    }
-                                }
-                                //else if (temp[i, j] == per[t, 0] && temp[i + 1, j] == per[t, 0] && per[t, 2] == 1)
-                                //{
-                                //    temp2[i + v, j] = Convert.ToInt32(per[t, 0]);
-                                //    temp2[i + v + 1, j] = Convert.ToInt32(per[t, 0]);
-                                //    temp2[i + v - 1, j] = 0;
-                                //    per[t, 1] = per[t, 1] - 1;
-                                //}
 
-                                else if (temp[i, j] == per[t, 0] && temp[i + 1, j] == per[t, 0] && per[t, 2] == 1)
-                                {
-                                    temp2[i + v, j] = Convert.ToInt32(per[t, 0]);
-                                    temp2[i + v + 1, j] = Convert.ToInt32(per[t, 0]);
-                                    temp2[i + v - 1, j] = 0;
-                                    per[t, 1] = per[t, 1] - 1;
-                                }
-
-                                if (temp[i, j] == per[t, 0] && temp[i + 1, j] != per[t, 0] && per[t, 2] == 2 && per[t, 1] == 0)//если подошло время попытаться перестроиться ЛЕГКОВОВЙ машине
-                                {
-                                    if (temp[i, j + 1] == 0 && temp[i + 1, j + 1] == 0 && temp[i + v, j + 1] == 0)
+                                    if (per[t, 2] == 2)
                                     {
-                                        temp2[i + v, j + 1] = Convert.ToInt32(per[t, 0]);
-                                        per[t, 1] = Math.Round(-(1 / mu) * Math.Log(rand.NextDouble()));
-                                        a = a + 1;
-                                    }
-                                    else if (temp[i, j - 1] == 0 && temp[i + 1, j - 1] == 0 && temp[i + v, j - 1] == 0)
-                                    {
-                                        temp2[i + v, j - 1] = Convert.ToInt32(per[t, 0]);
-                                        per[t, 1] = Math.Round(-(1 / mu) * Math.Log(rand.NextDouble()));
-                                        a = a + 1;
-                                    }
-                                    else
-                                    {
-                                        temp2[i + v, j] = Convert.ToInt32(per[t, 0]);
-                                        per[t, 1] = Math.Round(-(1 / mu) * Math.Log(rand.NextDouble()));
+                                        if (per[t, 1] == 0)//если подошло время попытаться перестроиться ЛЕГКОВОВЙ машине
+                                        {
+                                            if (temp[i, j + 1] == 0 && temp[i + v, j + 1] == 0)
+                                            {
+                                                temp2[i + v, j + 1] = Convert.ToInt32(per[t, 0]);
+                                                per[t, 1] = Math.Round(-(1 / mu) * Math.Log(rand.NextDouble()));
+                                                a++;
+                                            }
+                                            else if (temp[i, j - 1] == 0 && temp[i + v, j - 1] == 0)
+                                            {
+                                                temp2[i + v, j - 1] = Convert.ToInt32(per[t, 0]);
+                                                per[t, 1] = Math.Round(-(1 / mu) * Math.Log(rand.NextDouble()));
+                                                a++;
+                                            }
+                                            else
+                                            {
+                                                temp2[i + v, j] = Convert.ToInt32(per[t, 0]);
+                                                per[t, 1] = Math.Round(-(1 / mu) * Math.Log(rand.NextDouble()));
+                                            }
+                                        }
+                                        else if (temp[i, j] == per[t, 0])
+                                        {
+                                            temp2[i + v, j] = Convert.ToInt32(per[t, 0]);
+                                            per[t, 1]--;
+                                            if (per[t, 1] < 0)
+                                                per[t, 1] = Math.Round(-(1 / mu) * Math.Log(rand.NextDouble()));//костыль от -1 по времени
+                                        }
+                                        else
+                                        {
+                                            MessageBox.Show("ЛЕГКОВОВЙ" + (t + 2).ToString());
+                                        }
                                     }
                                 }
-                                else if (temp[i, j] == per[t, 0] && per[t, 2] == 2)//&& temp[i + 1, j] != per[t, 0] 
-                                {
-                                    temp2[i + v, j] = Convert.ToInt32(per[t, 0]);
-                                    per[t, 1] = per[t, 1] - 1;
-                                    if (per[t, 1] < 0)
-                                        per[t, 1] = Math.Round(-(1 / mu) * Math.Log(rand.NextDouble()));
-                                }
-                                //else if (temp[i, j] == per[t, 0] && temp[i + 1, j] != per[t, 0] && per[t, 2] == 2)
-                                //{
-                                //    temp2[i + v, j] = Convert.ToInt32(per[t, 0]);
-                                //    per[t, 1] = per[t, 1] - 1;
-                                //    if (per[t, 1] < 0)
-                                //        per[t, 1] = Math.Round(-(1 / mu) * Math.Log(rand.NextDouble()));
-                                //}
                             }
                         }
-                        ////////////////////////////////////////////////////////////////////////////////////////////////
-                        if (i == roadLength - v - 1)
-                        {
-                            temp2[roadLength - 1, j] = temp[i, j];
-                        }
-                        if (i == roadLength - v)
-                        {
-                            temp2[0, j] = temp[roadLength - v, j];
-                        }
-                        if (i == roadLength - v + 1)
-                        {
-                            temp2[1, j] = temp[roadLength - v + 1, j];
-                        }
+                        */
+
                     }
                 }
 
@@ -351,13 +416,96 @@ namespace Dsm3
             {
                 for (int j = 0; j < roadLanesCount; j++)
                 {
-                    if (i < roadLength - 1)
+                        t = Array.IndexOf(pert, temp[i, j]);
+                        if (t != -1)//
+                        {
+                        int iplusodin = (i + 1) % temp.GetLength(0);
+                        int iplusv= (i + v) % temp.GetLength(0);
+                        int iplusvplusodin = (i + v + 1) % temp.GetLength(0);
+                            //if (temp[i, j] == per[t, 0]) { //если текущий элемент массива является транспортным средством
+                                if (per[t, 2] == 1) { //если это грузова машина
+                                    if (temp[iplusodin, j] == per[t, 0] && per[t, 1] == 0)//если подошло время попытаться перестроиться ГРУЗОВОЙ машине
+                                    {
+                                        if (temp[i, j + 1] == 0 && temp[iplusodin, j + 1] == 0 && temp[iplusv, j + 1] == 0 && temp[iplusvplusodin, j + 1] == 0)
+                                        {
+                                            temp2[iplusv, j + 1] = Convert.ToInt32(per[t, 0]);
+                                            temp2[iplusvplusodin, j + 1] = Convert.ToInt32(per[t, 0]);
+                                            per[t, 1] = Math.Round(-(1 / mu) * Math.Log(rand.NextDouble()));
+                                            publicTransportCounter++;
+                                    MessageBox.Show(temp.GetLength(0).ToString());
+                                        }
+                                        else if (temp[i, j - 1] == 0 && temp[iplusodin, j - 1] == 0 && temp[iplusv, j - 1] == 0 && temp[iplusvplusodin, j - 1] == 0)
+                                        {
+                                            temp2[iplusv, j - 1] = Convert.ToInt32(per[t, 0]);
+                                            temp2[iplusvplusodin, j - 1] = Convert.ToInt32(per[t, 0]);
+                                            per[t, 1] = Math.Round(-(1 / mu) * Math.Log(rand.NextDouble()));
+                                            publicTransportCounter++;
+                                        }
+                                        else
+                                        {
+                                            temp2[iplusv, j] = Convert.ToInt32(per[t, 0]);
+                                            temp2[iplusvplusodin, j] = Convert.ToInt32(per[t, 0]);
+                                            per[t, 1] = Math.Round(-(1 / mu) * Math.Log(rand.NextDouble()));
+                                        }
+                                    }
+                                    else if (temp[i, j] == per[t, 0] && temp[iplusodin, j] == per[t, 0])
+                                    {
+                                        temp2[iplusv, j] = Convert.ToInt32(per[t, 0]);
+                                        temp2[iplusvplusodin, j] = Convert.ToInt32(per[t, 0]);
+                                        per[t, 1]--;
+                                        if (per[t, 1] < 0)
+                                            per[t, 1] = Math.Round(-(1 / mu) * Math.Log(rand.NextDouble())); //костыль от -1 по времени
+                                    }
+                                }
+
+                                if (per[t, 2] == 2) { 
+                                    if  (per[t, 1] == 0)//если подошло время попытаться перестроиться ЛЕГКОВОВЙ машине
+                                    {
+                                        if (temp[i, j + 1] == 0  && temp[iplusv, j + 1] == 0)
+                                        {
+                                            temp2[iplusv, j + 1] = Convert.ToInt32(per[t, 0]);
+                                            per[t, 1] = Math.Round(-(1 / mu) * Math.Log(rand.NextDouble()));
+                                            a ++;
+                                        }
+                                        else if (temp[i, j - 1] == 0  && temp[iplusv, j - 1] == 0)
+                                        {
+                                            temp2[iplusv, j - 1] = Convert.ToInt32(per[t, 0]);
+                                            per[t, 1] = Math.Round(-(1 / mu) * Math.Log(rand.NextDouble()));
+                                            a ++;
+                                        }
+                                        else
+                                        {
+                                            temp2[iplusv, j] = Convert.ToInt32(per[t, 0]);
+                                            per[t, 1] = Math.Round(-(1 / mu) * Math.Log(rand.NextDouble()));
+                                        }
+                                    }
+                                    else if (temp[i, j] == per[t, 0])
+                                    {
+                                        temp2[iplusv, j] = Convert.ToInt32(per[t, 0]);
+                                        per[t, 1]--;
+                                        if (per[t, 1] < 0)
+                                            per[t, 1] = Math.Round(-(1 / mu) * Math.Log(rand.NextDouble()));//костыль от -1 по времени
+                                    }
+                                    else
+                                    {
+                                        MessageBox.Show("ЛЕГКОВОВЙ" + (t+2).ToString());
+                                    }
+                                }
+                        //}
+                    }
+
+                    ////////////////////////////////////////////////////////////////////////////////////////////////
+                    /*
+                    else if (i == roadLength - 1)
                     {
                         t = Array.IndexOf(pert, temp[i, j]);
+                        
                         if (t != -1)
                         {
-                            if (temp[i, j] == per[t, 0]) { 
-                                if (per[t, 2] == 1) { 
+                            if (temp[i, j] == per[t, 0])
+                            {
+                                if (per[t, 2] == 1)
+                                {
                                     if (temp[i + 1, j] == per[t, 0] && per[t, 1] == 0)//если подошло время попытаться перестроиться ГРУЗОВОЙ машине
                                     {
                                         if (temp[i, j + 1] == 0 && temp[i + 1, j + 1] == 0 && temp[i + v, j + 1] == 0 && temp[i + v + 1, j + 1] == 0)
@@ -391,20 +539,21 @@ namespace Dsm3
                                     }
                                 }
 
-                                if (per[t, 2] == 2) { 
-                                    if  (per[t, 1] == 0)//если подошло время попытаться перестроиться ЛЕГКОВОВЙ машине
+                                if (per[t, 2] == 2)
+                                {
+                                    if (per[t, 1] == 0)//если подошло время попытаться перестроиться ЛЕГКОВОВЙ машине
                                     {
-                                        if (temp[i, j + 1] == 0  && temp[i + v, j + 1] == 0)
+                                        if (temp[i, j + 1] == 0 && temp[i + v, j + 1] == 0)
                                         {
                                             temp2[i + v, j + 1] = Convert.ToInt32(per[t, 0]);
                                             per[t, 1] = Math.Round(-(1 / mu) * Math.Log(rand.NextDouble()));
-                                            a ++;
+                                            a++;
                                         }
-                                        else if (temp[i, j - 1] == 0  && temp[i + v, j - 1] == 0)
+                                        else if (temp[i, j - 1] == 0 && temp[i + v, j - 1] == 0)
                                         {
                                             temp2[i + v, j - 1] = Convert.ToInt32(per[t, 0]);
                                             per[t, 1] = Math.Round(-(1 / mu) * Math.Log(rand.NextDouble()));
-                                            a ++;
+                                            a++;
                                         }
                                         else
                                         {
@@ -421,89 +570,14 @@ namespace Dsm3
                                     }
                                     else
                                     {
-                                        MessageBox.Show("ЛЕГКОВОВЙ" + (t+2).ToString());
+                                        MessageBox.Show("ЛЕГКОВОВЙ" + (t + 2).ToString());
                                     }
                                 }
                             }
                         }
                     }
-                    ////////////////////////////////////////////////////////////////////////////////////////////////
-                    else if (i == roadLength - 1)
-                    {
-                        if (temp[roadLength - 1, j] == temp[0, j])
-                        {
-                            temp[1, j] = temp[0, j];
-                        }
-                        t = Array.IndexOf(pert, temp[i, j]);
-                        if (t != -1)
-                        {
-                            if (temp[i, j] == per[t, 0] && temp[0, j] == per[t, 0] && per[t, 2] == 1 && per[t, 1] == 0)//если подошло время попытаться перестроиться ГРУЗОВОЙ машине
-                            {
-                                if (temp[i, j + 1] == 0 && temp[0, j + 1] == 0 && temp[v, j + 1] == 0 && temp[v + 1, j + 1] == 0)
-                                {
-                                    temp2[v, j + 1] = Convert.ToInt32(per[t, 0]);
-                                    temp2[v + 1, j + 1] = Convert.ToInt32(per[t, 0]);
-                                    temp2[v + 1, j] = 0;
-                                    per[t, 1] = Math.Round(-(1 / mu) * Math.Log(rand.NextDouble()));
-                                    publicTransportCounter++;
-                                }
-                                else if (temp[i, j - 1] == 0 && temp[0, j - 1] == 0 && temp[v, j - 1] == 0 && temp[v + 1, j - 1] == 0)
-                                {
-                                    temp2[v, j - 1] = Convert.ToInt32(per[t, 0]);
-                                    temp2[v + 1, j - 1] = Convert.ToInt32(per[t, 0]);
-                                    temp2[v + 1, j] = 0;
-                                    per[t, 1] = Math.Round(-(1 / mu) * Math.Log(rand.NextDouble()));
-                                    publicTransportCounter++;
-                                }
-                                else
-                                {
-                                    temp2[v, j] = Convert.ToInt32(per[t, 0]);
-                                    temp2[v + 1, j] = Convert.ToInt32(per[t, 0]);
-                                    per[t, 1] = Math.Round(-(1 / mu) * Math.Log(rand.NextDouble()));
-                                }
-                            }
-                            else if (temp[i, j] == per[t, 0] && temp[0, j] == per[t, 0] && per[t, 2] == 1)
-                            {
-                                temp2[v, j] = Convert.ToInt32(per[t, 0]);
-                                temp2[+1, j] = Convert.ToInt32(per[t, 0]);
-                                temp2[i, j] = 0;
-                                per[t, 1] = per[t, 1] - 1;
-                            }
+                    */
 
-                            if (temp[i, j] == per[t, 0] && temp[i + 1, j] != per[t, 0] && per[t, 2] == 2 && per[t, 1] == 0)//если подошло время попытаться перестроиться ЛЕГКОВОВЙ машине
-                            {
-                                if (temp[i, j + 1] == 0 && temp[0, j + 1] == 0 && temp[v, j + 1] == 0)
-                                {
-                                    temp2[v, j + 1] = Convert.ToInt32(per[t, 0]);
-                                    per[t, 1] = Math.Round(-(1 / mu) * Math.Log(rand.NextDouble()));
-                                    a = a + 1;
-                                }
-                                else if (temp[i, j - 1] == 0 && temp[0, j - 1] == 0 && temp[v, j - 1] == 0)
-                                {
-                                    temp2[v, j - 1] = Convert.ToInt32(per[t, 0]);
-                                    per[t, 1] = Math.Round(-(1 / mu) * Math.Log(rand.NextDouble()));
-                                    a = a + 1;
-                                }
-                                else
-                                {
-                                    temp2[v, j] = Convert.ToInt32(per[t, 0]);
-                                    per[t, 1] = Math.Round(-(1 / mu) * Math.Log(rand.NextDouble()));
-                                }
-                            }
-                            else if (temp[i, j] == per[t, 0] && per[t, 2] == 2)//&& temp[i + 1, j] != per[t, 0] 
-                            {
-                                temp2[v, j] = Convert.ToInt32(per[t, 0]);
-                                per[t, 1] = per[t, 1] - 1;
-                                if (per[t, 1] < 0)
-                                    per[t, 1] = Math.Round(-(1 / mu) * Math.Log(rand.NextDouble()));
-                            }
-                        }
-                        //temp2[0, j] = temp[roadLength-v-1, j];
-                    }
-                    else
-                    {
-                        MessageBox.Show("Айайай");
-                    }
                 }
             }
 
@@ -538,8 +612,6 @@ namespace Dsm3
                 }
             }
             dataGridView3.AutoResizeColumns();
-
-
         }
     }
 }
