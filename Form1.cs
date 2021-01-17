@@ -333,7 +333,7 @@ namespace Dsm3
                 for (int laneIndex = 0; laneIndex < roadLanesCount; laneIndex++)
                 {
                     objectIndex = Array.IndexOf(pert, temp[i, laneIndex]);
-                    if (objectIndex != -1)//
+                    if (objectIndex != -1)
                     {
                         int iplusodin = (i + 1) % temp.GetLength(0);
                         int iplusv= (i + v) % temp.GetLength(0);
@@ -341,7 +341,7 @@ namespace Dsm3
                         if (isPublicTransport(per, objectIndex)) {
                             if (isNextObjectSame(per,temp,objectIndex,nextObjectIndex,laneIndex) && isTimeToChangeLane(per, objectIndex))
                             {
-                                if (temp[i, laneIndex + 1] == 0 && temp[iplusodin, laneIndex + 1] == 0 && temp[iplusv, laneIndex + 1] == 0 && temp[iplusvplusodin, laneIndex + 1] == 0)
+                                if (publicTransportCouldMoveToRight(temp, i, iplusodin, iplusv, laneIndex))
                                 {
                                     temp2[iplusv, laneIndex + 1] = Convert.ToInt32(per[objectIndex, 0]);
                                     temp2[iplusvplusodin, laneIndex + 1] = Convert.ToInt32(per[objectIndex, 0]);
@@ -349,7 +349,7 @@ namespace Dsm3
                                     publicTransportCounter++;
                                     MessageBox.Show(temp.GetLength(0).ToString());
                                 }
-                                else if (temp[i, laneIndex - 1] == 0 && temp[iplusodin, laneIndex - 1] == 0 && temp[iplusv, laneIndex - 1] == 0 && temp[iplusvplusodin, laneIndex - 1] == 0)
+                                else if (publicTransportCouldMoveToLeft(temp, i, iplusodin, iplusv, laneIndex))
                                 {
                                     temp2[iplusv, laneIndex - 1] = Convert.ToInt32(per[objectIndex, 0]);
                                     temp2[iplusvplusodin, laneIndex - 1] = Convert.ToInt32(per[objectIndex, 0]);
@@ -376,13 +376,13 @@ namespace Dsm3
                         if (isCar(per,objectIndex)) { 
                             if  (isTimeToChangeLane(per,objectIndex))
                             {
-                                if (temp[i, laneIndex + 1] == 0  && temp[iplusv, laneIndex + 1] == 0)
+                                if (carCouldMoveToRight(temp, i, iplusv, laneIndex))
                                 {
                                     temp2[iplusv, laneIndex + 1] = Convert.ToInt32(per[objectIndex, 0]);
                                     per[objectIndex, 1] = Math.Round(-(1 / mu) * Math.Log(rand.NextDouble()));
                                     carsCounter++;
                                 }
-                                else if (temp[i, laneIndex - 1] == 0  && temp[iplusv, laneIndex - 1] == 0)
+                                else if (carCouldMoveToLeft(temp, i, iplusv, laneIndex))
                                 {
                                     temp2[iplusv, laneIndex - 1] = Convert.ToInt32(per[objectIndex, 0]);
                                     per[objectIndex, 1] = Math.Round(-(1 / mu) * Math.Log(rand.NextDouble()));
@@ -445,21 +445,49 @@ namespace Dsm3
     }
 
     //TODO rename "per" to something with more sense
-    private boolean isPublicTransport(int[,] per, int objectIndex) {
+    private boolean isPublicTransport(int[,] per, int objectIndex) 
+    {
         return per[objectIndex, 2] == 1;
     }
 
     //TODO rename "per" to something with more sense
     //TODO Mb you should rename "Car" to something more acceptable in current context ?
-    private boolean isCar(int[,] per, int objectIndex) {
+    private boolean isCar(int[,] per, int objectIndex) 
+    {
         return per[objectIndex, 2] == 2;
     }
 
-    private boolean isTimeToChangeLane(int[,] per, int objectIndex) {
+    private boolean isTimeToChangeLane(int[,] per, int objectIndex) 
+    {
         return per[objectIndex, 1] == 0;
     }
 
-    private boolean isNextObjectSame(int[,] per, int [,] temp,int objectIndex, int nextObjectIndex, int laneIndex) {
+    private boolean isNextObjectSame(int[,] per, int [,] temp,int objectIndex, int nextObjectIndex, int laneIndex) 
+    {
         return temp[nextObjectIndex, laneIndex] == per[objectIndex, 0];
+    }
+
+    private boolean publicTransportCouldMoveToRight(int [,] temp, int roadIndex,int secondPartIndex int nextRoadIndex, int laneIndex) 
+    {
+        int rightLaneIndex = laneIndex + 1;
+        return temp[roadIndex, rightLaneIndex] == 0 && temp[secondPartIndex, rightLaneIndex] == 0 
+        && temp[nextRoadIndex, rightLaneIndex] == 0 && temp[nextRoadIndex + 1, rightLaneIndex] == 0;
+    }
+
+    private boolean publicTransportCouldMoveToLeft(int [,] temp, int roadIndex,int secondPartIndex int nextRoadIndex, int laneIndex) 
+    {
+        int leftLaneIndex = laneIndex - 1;
+        return temp[roadIndex, leftLaneIndex] == 0 && temp[secondPartIndex, leftLaneIndex] == 0 
+        && temp[nextRoadIndex, leftLaneIndex] == 0 && temp[nextRoadIndex + 1, leftLaneIndex] == 0;
+    }
+
+    private boolean carCouldMoveToRight(int [,] temp, int roadIndex, int nextRoadIndex, int laneIndex) 
+    {
+        return temp[roadIndex, laneIndex + 1] == 0  && temp[nextRoadIndex, laneIndex + 1] == 0;
+    }
+
+    private boolean carCouldMoveToLeft(int [,] temp, int roadIndex, int nextRoadIndex, int laneIndex)
+    {
+        return temp[roadIndex, laneIndex - 1] == 0  && temp[nextRoadIndex, laneIndex - 1] == 0;
     }
 }
