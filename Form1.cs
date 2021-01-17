@@ -185,23 +185,23 @@ namespace Dsm3
                         t = Array.IndexOf(pert, temp[i, j]);
                         if (t != -1)
                         {
-                            int iplusodin = (i + 1) % temp.GetLength(0);
+                            int secondPartRoadIndex = (i + 1) % temp.GetLength(0);
                             int iplusv = (i + v) % temp.GetLength(0);
                             int iplusvplusodin = (i + v + 1) % temp.GetLength(0);
                             if (temp[i, j] == per[t, 0])
                             {
                                 if (per[t, 2] == 1)
                                 {
-                                    if (temp[iplusodin, j] == per[t, 0] && per[t, 1] == 0)//если подошло время попытаться перестроиться ГРУЗОВОЙ машине
+                                    if (temp[secondPartRoadIndex, j] == per[t, 0] && per[t, 1] == 0)//если подошло время попытаться перестроиться ГРУЗОВОЙ машине
                                     {
-                                        if (temp[i, j + 1] == 0 && temp[iplusodin, j + 1] == 0 && temp[iplusv, j + 1] == 0 && temp[iplusvplusodin, j + 1] == 0)
+                                        if (temp[i, j + 1] == 0 && temp[secondPartRoadIndex, j + 1] == 0 && temp[iplusv, j + 1] == 0 && temp[iplusvplusodin, j + 1] == 0)
                                         {
                                             temp2[iplusv, j + 1] = Convert.ToInt32(per[t, 0]);
                                             temp2[iplusvplusodin, j + 1] = Convert.ToInt32(per[t, 0]);
                                             per[t, 1] = Math.Round(-(1 / mu) * Math.Log(rand.NextDouble()));
                                             publicTransportCounter++;
                                         }
-                                        else if (temp[i, j - 1] == 0 && temp[iplusodin, j - 1] == 0 && temp[iplusv, j - 1] == 0 && temp[iplusvplusodin, j - 1] == 0)
+                                        else if (temp[i, j - 1] == 0 && temp[secondPartRoadIndex, j - 1] == 0 && temp[iplusv, j - 1] == 0 && temp[iplusvplusodin, j - 1] == 0)
                                         {
                                             temp2[iplusv, j - 1] = Convert.ToInt32(per[t, 0]);
                                             temp2[iplusvplusodin, j - 1] = Convert.ToInt32(per[t, 0]);
@@ -215,7 +215,7 @@ namespace Dsm3
                                             per[t, 1] = Math.Round(-(1 / mu) * Math.Log(rand.NextDouble()));
                                         }
                                     }
-                                    else if (temp[(i) % temp.GetLength(0), j] == per[t, 0] && temp[iplusodin, j] == per[t, 0])
+                                    else if (temp[(i) % temp.GetLength(0), j] == per[t, 0] && temp[secondPartRoadIndex, j] == per[t, 0])
                                     {
                                         temp2[iplusv, j] = Convert.ToInt32(per[t, 0]);
                                         temp2[iplusvplusodin, j] = Convert.ToInt32(per[t, 0]);
@@ -321,52 +321,46 @@ namespace Dsm3
                 pert[i] = Convert.ToInt32(per[i,0]);
             }
 
-            int[,] temp2 = new int[roadLength, roadLanesCount];
-            for (int i = 0; i < roadLength; i++)
-            {
-                temp2[i, 0] = 1;
-                temp2[i, roadLanesCount - 1] = 1;
-            }
+            int[,] nextRoadState = initNextRoadStateWithRoadBump(roadLength,roadLanesCount);
 
-            for (int roadIndex = 0; i < roadLength; i++)
+            for (int roadIndex = 0; roadIndex < roadLength; roadIndex++)
             {
                 for (int laneIndex = 0; laneIndex < roadLanesCount; laneIndex++)
                 {
-                    objectIndex = Array.IndexOf(pert, temp[i, laneIndex]);
+                    objectIndex = Array.IndexOf(pert, temp[roadIndex, laneIndex]);
                     if (objectIndex != -1)
                     {
-                        int iplusodin = (i + 1) % temp.GetLength(0);
-                        int iplusv= (i + v) % temp.GetLength(0);
-                        int iplusvplusodin = (i + v + 1) % temp.GetLength(0);
+                        int secondPartRoadIndex = (roadIndex + 1) % temp.GetLength(0);
+                        int nextMoveRoadIndex = (roadIndex + v) % temp.GetLength(0);
                         if (isPublicTransport(per, objectIndex)) {
-                            if (isNextObjectSame(per,temp,objectIndex,nextObjectIndex,laneIndex) && isTimeToChangeLane(per, objectIndex))
+                            if (isNextObjectSame(per, temp, objectIndex,v ,laneIndex) && isTimeToChangeLane(per, objectIndex))
                             {
-                                if (publicTransportCouldMoveToRight(temp, i, iplusodin, iplusv, laneIndex))
+                                if (publicTransportCouldMoveToRight(temp, roadIndex, secondPartRoadIndex, nextMoveRoadIndex, laneIndex))
                                 {
-                                    temp2[iplusv, laneIndex + 1] = Convert.ToInt32(per[objectIndex, 0]);
-                                    temp2[iplusvplusodin, laneIndex + 1] = Convert.ToInt32(per[objectIndex, 0]);
+                                    nextRoadState[nextMoveRoadIndex, laneIndex + 1] = Convert.ToInt32(per[objectIndex, 0]);
+                                    nextRoadState[iplusvplusodin, laneIndex + 1] = Convert.ToInt32(per[objectIndex, 0]);
                                     per[objectIndex, 1] = Math.Round(-(1 / mu) * Math.Log(rand.NextDouble()));
                                     publicTransportCounter++;
                                     MessageBox.Show(temp.GetLength(0).ToString());
                                 }
-                                else if (publicTransportCouldMoveToLeft(temp, i, iplusodin, iplusv, laneIndex))
+                                else if (publicTransportCouldMoveToLeft(temp, roadIndex, secondPartRoadIndex, nextMoveRoadIndex, laneIndex))
                                 {
-                                    temp2[iplusv, laneIndex - 1] = Convert.ToInt32(per[objectIndex, 0]);
-                                    temp2[iplusvplusodin, laneIndex - 1] = Convert.ToInt32(per[objectIndex, 0]);
+                                    nextRoadState[nextMoveRoadIndex, laneIndex - 1] = Convert.ToInt32(per[objectIndex, 0]);
+                                    nextRoadState[iplusvplusodin, laneIndex - 1] = Convert.ToInt32(per[objectIndex, 0]);
                                     per[objectIndex, 1] = Math.Round(-(1 / mu) * Math.Log(rand.NextDouble()));
                                     publicTransportCounter++;
                                 }
                                 else
                                 {
-                                    temp2[iplusv, laneIndex] = Convert.ToInt32(per[objectIndex, 0]);
-                                    temp2[iplusvplusodin, laneIndex] = Convert.ToInt32(per[objectIndex, 0]);
+                                    nextRoadState[nextMoveRoadIndex, laneIndex] = Convert.ToInt32(per[objectIndex, 0]);
+                                    nextRoadState[iplusvplusodin, laneIndex] = Convert.ToInt32(per[objectIndex, 0]);
                                     per[objectIndex, 1] = Math.Round(-(1 / mu) * Math.Log(rand.NextDouble()));
                                 }
                             }
-                            else if (temp[i, laneIndex] == per[objectIndex, 0] && temp[iplusodin, laneIndex] == per[objectIndex, 0])
+                            else if (temp[roadIndex, laneIndex] == per[objectIndex, 0] && temp[secondPartRoadIndex, laneIndex] == per[objectIndex, 0])
                             {
-                                temp2[iplusv, laneIndex] = Convert.ToInt32(per[objectIndex, 0]);
-                                temp2[iplusvplusodin, laneIndex] = Convert.ToInt32(per[objectIndex, 0]);
+                                nextRoadState[nextMoveRoadIndex, laneIndex] = Convert.ToInt32(per[objectIndex, 0]);
+                                nextRoadState[iplusvplusodin, laneIndex] = Convert.ToInt32(per[objectIndex, 0]);
                                 per[objectIndex, 1]--;
                                 if (per[objectIndex, 1] < 0)
                                     per[objectIndex, 1] = Math.Round(-(1 / mu) * Math.Log(rand.NextDouble())); //костыль от -1 по времени
@@ -376,27 +370,27 @@ namespace Dsm3
                         if (isCar(per,objectIndex)) { 
                             if  (isTimeToChangeLane(per,objectIndex))
                             {
-                                if (carCouldMoveToRight(temp, i, iplusv, laneIndex))
+                                if (carCouldMoveToRight(temp, roadIndex, nextMoveRoadIndex, laneIndex))
                                 {
-                                    temp2[iplusv, laneIndex + 1] = Convert.ToInt32(per[objectIndex, 0]);
+                                    nextRoadState[nextMoveRoadIndex, laneIndex + 1] = Convert.ToInt32(per[objectIndex, 0]);
                                     per[objectIndex, 1] = Math.Round(-(1 / mu) * Math.Log(rand.NextDouble()));
                                     carsCounter++;
                                 }
-                                else if (carCouldMoveToLeft(temp, i, iplusv, laneIndex))
+                                else if (carCouldMoveToLeft(temp, roadIndex, nextMoveRoadIndex, laneIndex))
                                 {
-                                    temp2[iplusv, laneIndex - 1] = Convert.ToInt32(per[objectIndex, 0]);
+                                    nextRoadState[nextMoveRoadIndex, laneIndex - 1] = Convert.ToInt32(per[objectIndex, 0]);
                                     per[objectIndex, 1] = Math.Round(-(1 / mu) * Math.Log(rand.NextDouble()));
                                     carsCounter++;
                                 }
                                 else
                                 {
-                                    temp2[iplusv, laneIndex] = Convert.ToInt32(per[objectIndex, 0]);
+                                    nextRoadState[nextMoveRoadIndex, laneIndex] = Convert.ToInt32(per[objectIndex, 0]);
                                     per[objectIndex, 1] = Math.Round(-(1 / mu) * Math.Log(rand.NextDouble()));
                                 }
                             }
-                            else if (temp[i, laneIndex] == per[objectIndex, 0])
+                            else if (temp[roadIndex, laneIndex] == per[objectIndex, 0])
                             {
-                                temp2[iplusv, laneIndex] = Convert.ToInt32(per[objectIndex, 0]);
+                                nextRoadState[nextMoveRoadIndex, laneIndex] = Convert.ToInt32(per[objectIndex, 0]);
                                 per[objectIndex, 1]--;
                                 if (per[objectIndex, 1] < 0)
                                     per[objectIndex, 1] = Math.Round(-(1 / mu) * Math.Log(rand.NextDouble()));//костыль от -1 по времени
@@ -413,7 +407,7 @@ namespace Dsm3
             label7.Text = label7.Text + " " + Convert.ToString(publicTransportCounter);
             label8.Text = label8.Text + " " + Convert.ToString(carsCounter);
 
-            temp = temp2;
+            temp = nextRoadState;
 
             dataGridView2.RowCount = temp.GetLength(0);
             dataGridView2.ColumnCount = temp.GetLength(1);
@@ -444,6 +438,17 @@ namespace Dsm3
         }
     }
 
+    private int [,] initNextRoadStateWithRoadBump(int roadLength, int roadLanesCount) 
+    {
+        int [,] nextRoadState =  new int[roadLength, roadLanesCount];
+        for (int i = 0; i < roadLength; i++)
+        {
+            temp2[i, 0] = 1;
+            temp2[i, roadLanesCount - 1] = 1;
+        }
+        return nextRoadState;
+    }
+
     //TODO rename "per" to something with more sense
     private boolean isPublicTransport(int[,] per, int objectIndex) 
     {
@@ -471,23 +476,25 @@ namespace Dsm3
     {
         int rightLaneIndex = laneIndex + 1;
         return temp[roadIndex, rightLaneIndex] == 0 && temp[secondPartIndex, rightLaneIndex] == 0 
-        && temp[nextRoadIndex, rightLaneIndex] == 0 && temp[nextRoadIndex + 1, rightLaneIndex] == 0;
+        && temp[nextRoadIndex, rightLaneIndex] == 0 && temp[ (nextRoadIndex + 1) % temp.GetLength(0) , rightLaneIndex] == 0;
     }
 
     private boolean publicTransportCouldMoveToLeft(int [,] temp, int roadIndex,int secondPartIndex int nextRoadIndex, int laneIndex) 
     {
         int leftLaneIndex = laneIndex - 1;
         return temp[roadIndex, leftLaneIndex] == 0 && temp[secondPartIndex, leftLaneIndex] == 0 
-        && temp[nextRoadIndex, leftLaneIndex] == 0 && temp[nextRoadIndex + 1, leftLaneIndex] == 0;
+        && temp[nextRoadIndex, leftLaneIndex] == 0 && temp[(nextRoadIndex + 1) % temp.GetLength(0), leftLaneIndex] == 0;
     }
 
     private boolean carCouldMoveToRight(int [,] temp, int roadIndex, int nextRoadIndex, int laneIndex) 
     {
-        return temp[roadIndex, laneIndex + 1] == 0  && temp[nextRoadIndex, laneIndex + 1] == 0;
+        int rightLaneIndex = laneIndex + 1;
+        return temp[roadIndex, rightLaneIndex] == 0  && temp[nextRoadIndex, rightLaneIndex] == 0;
     }
 
     private boolean carCouldMoveToLeft(int [,] temp, int roadIndex, int nextRoadIndex, int laneIndex)
     {
-        return temp[roadIndex, laneIndex - 1] == 0  && temp[nextRoadIndex, laneIndex - 1] == 0;
+        int leftLaneIndex = laneIndex - 1;
+        return temp[roadIndex, leftLaneIndex] == 0  && temp[nextRoadIndex, leftLaneIndex] == 0;
     }
 }
