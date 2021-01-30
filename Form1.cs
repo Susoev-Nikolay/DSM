@@ -18,8 +18,8 @@ namespace Dsm3
             InitializeComponent();
         }
         int[,] main, temp;
-        int[,] per;
-        int[] pert;
+        int[,] properties;
+        int[] carIndexToPropetyArray;
         Random rand = new Random();
         int[][] normalnoeRaspredilenie;
 
@@ -28,7 +28,7 @@ namespace Dsm3
         //TODO initiliazie road info in one method to all buttons
 
         //TODO fix
-        private int [,] createRoadLanes() 
+        private int[,] createRoadLanes()
         {
             // for (int o = 1; o < MAX_O; o++)//цикл для выделенной полосы
             // {
@@ -45,14 +45,14 @@ namespace Dsm3
             //     }
             //     tb = 0;
             // }
-            return new int[0,0];
+            return new int[0, 0];
         }
 
         private void button1_Click(object sender, EventArgs e)
         {
             Random rnd = new Random();
             int P = Convert.ToInt32(textBox1.Text);
-            int roadLanesCount = Convert.ToInt32(textBox1.Text)+2;
+            int roadLanesCount = Convert.ToInt32(textBox1.Text) + 2;
             int roadLength = Convert.ToInt32(textBox2.Text) / 5;
             double rho = Convert.ToDouble(textBox3.Text);//плотность
             double mu = Convert.ToDouble(textBox5.Text);//мю
@@ -71,7 +71,7 @@ namespace Dsm3
             for (int i = 0; i < roadLength; i++)
             {
                 main[i, 0] = 1;
-                main[i, roadLanesCount-1] = 1;
+                main[i, roadLanesCount - 1] = 1;
             }
             //TODO replace cycle to main = createRoadLanes();
             for (int o = 1; o < 2; o++)//цикл для выделенной полосы
@@ -90,7 +90,7 @@ namespace Dsm3
                 tb = 0;
             }
 
-            for (int o = 2; o < roadLanesCount-1; o++)//легковые машины
+            for (int o = 2; o < roadLanesCount - 1; o++)//легковые машины
             {
                 for (int i = 0; i < carsL; i++)
                 {
@@ -108,29 +108,30 @@ namespace Dsm3
             }
 
 
-            per = new int[publicTransportAmount + carsL * (P - 1), 4];
+            properties = new int[publicTransportAmount + carsL * (P - 1), 5];
             int ticks = Convert.ToInt32(textBox6.Text);
-            normalnoeRaspredilenie = new int[per.GetLength(0)][];
-            for (int i = 0; i < per.GetLength(0); i++)
+            normalnoeRaspredilenie = new int[properties.GetLength(0)][];
+            for (int i = 0; i < properties.GetLength(0); i++)
             {
                 normalnoeRaspredilenie[i] = calculateRandomNumbers(ticks, mu);
             }
             for (int i = 0; i < publicTransportAmount + carsL * (P - 1); i++)
             {
-                per[i, 0] = i + 2;
-                per[i, 1] = normalnoeRaspredilenie[i][0];//Convert.ToInt32(Math.Round(-(1 / mu) * Math.Log(rand.NextDouble())));
+                properties[i, 0] = i + 2;
+                properties[i, 1] = normalnoeRaspredilenie[i][0];//Convert.ToInt32(Math.Round(-(1 / mu) * Math.Log(rand.NextDouble())));
                 if (i < publicTransportAmount)
                 {
-                    per[i, 2] = 1;
+                    properties[i, 2] = 1;
                 }
-                else 
+                else
                 {
-                    per[i, 2] = 2;
+                    properties[i, 2] = 2;
                 }
-                per[i, 3] = 0;
+                properties[i, 3] = 0;
+                properties[i, 4] = Convert.ToInt32(rand.NextDouble() < 0.7);
             }
 
-            
+
 
 
             temp = main;
@@ -149,13 +150,13 @@ namespace Dsm3
             }
             dataGridView1.AutoResizeColumns();
 
-            dataGridView3.RowCount = per.GetLength(0);
-            dataGridView3.ColumnCount = per.GetLength(1);
-            for (int i = 0; i < per.GetLength(0); i++)
+            dataGridView3.RowCount = properties.GetLength(0);
+            dataGridView3.ColumnCount = properties.GetLength(1);
+            for (int i = 0; i < properties.GetLength(0); i++)
             {
-                for (int j = 0; j < per.GetLength(1); j++)
+                for (int j = 0; j < properties.GetLength(1); j++)
                 {
-                    dataGridView3.Rows[i].Cells[j].Value = per[i, j];
+                    dataGridView3.Rows[i].Cells[j].Value = properties[i, j];
                 }
             }
             dataGridView3.AutoResizeColumns();
@@ -173,8 +174,8 @@ namespace Dsm3
             int publicTransportAmount = Convert.ToInt32(Math.Round(roadLength / 4 * rho));
 
             int objectIndex;
-           
-            pert = new int[publicTransportAmount + carsL * (P - 1)];
+
+            carIndexToPropetyArray = new int[publicTransportAmount + carsL * (P - 1)];
 
             int prevTickPublicTransporntLaneChangeCount = 0;
             int prevTickCarsLaneChangeCount = 0;
@@ -186,97 +187,101 @@ namespace Dsm3
                 int carsCounter = 0;
 
 
-                for (int i = 0; i < pert.Length; i++)
+                for (int i = 0; i < carIndexToPropetyArray.Length; i++)
                 {
-                    pert[i] = Convert.ToInt32(per[i, 0]);
+                    carIndexToPropetyArray[i] = Convert.ToInt32(properties[i, 0]);
                 }
 
                 int[,] nextRoadState = initNextRoadStateWithRoadBump(roadLength, roadLanesCount);
 
                 for (int roadIndex = 0; roadIndex < roadLength; roadIndex++)
                 {
-                    for (int laneIndex = 0; laneIndex < roadLanesCount; laneIndex++)
+                    for (int laneIndex = 1; laneIndex < roadLanesCount - 1; laneIndex++)
                     {
-                        objectIndex = Array.IndexOf(pert, temp[roadIndex, laneIndex]);
+                        objectIndex = Array.IndexOf(carIndexToPropetyArray, temp[roadIndex, laneIndex]);
                         if (objectIndex != -1)
                         {
                             int secondPartRoadIndex = (roadIndex + 1) % temp.GetLength(0);
                             int nextMoveRoadIndex = (roadIndex + v) % temp.GetLength(0);
-                            if (isPublicTransport(per, objectIndex))
+                            if (isPublicTransport(properties, objectIndex))
                             {
-
-                                if (isNextObjectSame(per, temp, objectIndex, nextMoveRoadIndex, laneIndex) && isTimeToChangeLane(per, objectIndex))
+                                if (isNextObjectSame(properties, temp, objectIndex, nextMoveRoadIndex, laneIndex) && isTimeToChangeLane(properties, objectIndex))
                                 {
-                                    if (publicTransportCouldMoveToRight(temp, roadIndex, secondPartRoadIndex, nextMoveRoadIndex, laneIndex))
+
+                                    if (publicTransportCouldMoveToRight(temp, roadIndex, secondPartRoadIndex, nextMoveRoadIndex, laneIndex)
+                                        && laneIndex + 2 < roadLanesCount && (temp[roadIndex, laneIndex + 2] == 0 || temp[roadIndex, laneIndex + 2] == 1))
                                     {
-                                        nextRoadState[nextMoveRoadIndex, laneIndex + 1] = Convert.ToInt32(per[objectIndex, 0]);
-                                        nextRoadState[(nextMoveRoadIndex + 1) % temp.GetLength(0), laneIndex + 1] = Convert.ToInt32(per[objectIndex, 0]);
-                                        per[objectIndex, 1] = normalnoeRaspredilenie[objectIndex][per[objectIndex, 3]];//calculateTimeToMove(mu);
-                                        per[objectIndex, 3]++;
+                                        nextRoadState[nextMoveRoadIndex, laneIndex + 1] = Convert.ToInt32(properties[objectIndex, 0]);
+                                        nextRoadState[(nextMoveRoadIndex + 1) % temp.GetLength(0), laneIndex + 1] = Convert.ToInt32(properties[objectIndex, 0]);
+                                        properties[objectIndex, 1] = normalnoeRaspredilenie[objectIndex][properties[objectIndex, 3]];//calculateTimeToMove(mu);
+                                        properties[objectIndex, 3]++;
                                         publicTransportCounter++;
                                     }
-                                    else if (publicTransportCouldMoveToLeft(temp, roadIndex, secondPartRoadIndex, nextMoveRoadIndex, laneIndex))
+                                    else if (publicTransportCouldMoveToLeft(temp, roadIndex, secondPartRoadIndex, nextMoveRoadIndex, laneIndex)
+                                        && laneIndex - 2 >= 0 && (temp[roadIndex, laneIndex - 2] == 0 || temp[roadIndex, laneIndex - 2] == 1))
                                     {
-                                        nextRoadState[nextMoveRoadIndex, laneIndex - 1] = Convert.ToInt32(per[objectIndex, 0]);
-                                        nextRoadState[(nextMoveRoadIndex + 1) % temp.GetLength(0), laneIndex - 1] = Convert.ToInt32(per[objectIndex, 0]);
-                                        per[objectIndex, 1] = normalnoeRaspredilenie[objectIndex][per[objectIndex, 3]];//calculateTimeToMove(mu);
-                                        per[objectIndex, 3]++;
+                                        nextRoadState[nextMoveRoadIndex, laneIndex - 1] = Convert.ToInt32(properties[objectIndex, 0]);
+                                        nextRoadState[(nextMoveRoadIndex + 1) % temp.GetLength(0), laneIndex - 1] = Convert.ToInt32(properties[objectIndex, 0]);
+                                        properties[objectIndex, 1] = normalnoeRaspredilenie[objectIndex][properties[objectIndex, 3]];//calculateTimeToMove(mu);
+                                        properties[objectIndex, 3]++;
                                         publicTransportCounter++;
                                     }
                                     else
                                     {
-                                        nextRoadState[nextMoveRoadIndex, laneIndex] = Convert.ToInt32(per[objectIndex, 0]);
-                                        nextRoadState[(nextMoveRoadIndex + 1) % temp.GetLength(0), laneIndex] = Convert.ToInt32(per[objectIndex, 0]);
-                                        per[objectIndex, 1] = normalnoeRaspredilenie[objectIndex][per[objectIndex, 3]];//calculateTimeToMove(mu);
-                                        per[objectIndex, 3]++;
+                                        nextRoadState[nextMoveRoadIndex, laneIndex] = Convert.ToInt32(properties[objectIndex, 0]);
+                                        nextRoadState[(nextMoveRoadIndex + 1) % temp.GetLength(0), laneIndex] = Convert.ToInt32(properties[objectIndex, 0]);
+                                        properties[objectIndex, 1] = normalnoeRaspredilenie[objectIndex][properties[objectIndex, 3]];//calculateTimeToMove(mu);
+                                        properties[objectIndex, 3]++;
                                     }
                                 }
-                                else if (temp[roadIndex, laneIndex] == per[objectIndex, 0] && temp[secondPartRoadIndex, laneIndex] == per[objectIndex, 0])
+                                else if (temp[roadIndex, laneIndex] == properties[objectIndex, 0] && temp[secondPartRoadIndex, laneIndex] == properties[objectIndex, 0])
                                 {
-                                    nextRoadState[nextMoveRoadIndex, laneIndex] = Convert.ToInt32(per[objectIndex, 0]);
-                                    nextRoadState[(nextMoveRoadIndex + 1) % temp.GetLength(0), laneIndex] = Convert.ToInt32(per[objectIndex, 0]);
-                                    per[objectIndex, 1]--;
-                                    if (per[objectIndex, 1] < 0)
+                                    nextRoadState[nextMoveRoadIndex, laneIndex] = Convert.ToInt32(properties[objectIndex, 0]);
+                                    nextRoadState[(nextMoveRoadIndex + 1) % temp.GetLength(0), laneIndex] = Convert.ToInt32(properties[objectIndex, 0]);
+                                    properties[objectIndex, 1]--;
+                                    if (properties[objectIndex, 1] < 0)
                                     {
-                                        per[objectIndex, 1] = normalnoeRaspredilenie[objectIndex][per[objectIndex, 3]];//calculateTimeToMove(mu);
-                                        per[objectIndex, 3]++;
+                                        properties[objectIndex, 1] = normalnoeRaspredilenie[objectIndex][properties[objectIndex, 3]];//calculateTimeToMove(mu);
+                                        properties[objectIndex, 3]++;
                                     } //костыль от -1 по времени
                                 }
                             }
 
-                            if (isCar(per, objectIndex))
+                            if (isCar(properties, objectIndex))
                             {
-                                if (isTimeToChangeLane(per, objectIndex))
+                                if (isTimeToChangeLane(properties, objectIndex))
                                 {
-                                    if (carCouldMoveToRight(temp, roadIndex, nextMoveRoadIndex, laneIndex))
+                                    if (carCouldMoveToRight(temp, roadIndex, nextMoveRoadIndex, laneIndex)
+                                        && laneIndex + 2 < roadLanesCount && (temp[roadIndex, laneIndex + 2] == 0 || temp[roadIndex, laneIndex + 2] == 1))
                                     {
-                                        nextRoadState[nextMoveRoadIndex, laneIndex + 1] = Convert.ToInt32(per[objectIndex, 0]);
-                                        per[objectIndex, 1] = normalnoeRaspredilenie[objectIndex][per[objectIndex, 3]];//calculateTimeToMove(mu);
-                                        per[objectIndex, 3]++;
+                                        nextRoadState[nextMoveRoadIndex, laneIndex + 1] = Convert.ToInt32(properties[objectIndex, 0]);
+                                        properties[objectIndex, 1] = normalnoeRaspredilenie[objectIndex][properties[objectIndex, 3]];//calculateTimeToMove(mu);
+                                        properties[objectIndex, 3]++;
                                         carsCounter++;
                                     }
-                                    else if (carCouldMoveToLeft(temp, roadIndex, nextMoveRoadIndex, laneIndex))
+                                    else if (carCouldMoveToLeft(temp, roadIndex, nextMoveRoadIndex, laneIndex)
+                                        && laneIndex - 2 >= 0 && (temp[roadIndex, laneIndex - 2] == 0 || temp[roadIndex, laneIndex - 2] == 1))
                                     {
-                                        nextRoadState[nextMoveRoadIndex, laneIndex - 1] = Convert.ToInt32(per[objectIndex, 0]);
-                                        per[objectIndex, 1] = normalnoeRaspredilenie[objectIndex][per[objectIndex, 3]];//calculateTimeToMove(mu);
-                                        per[objectIndex, 3]++;
+                                        nextRoadState[nextMoveRoadIndex, laneIndex - 1] = Convert.ToInt32(properties[objectIndex, 0]);
+                                        properties[objectIndex, 1] = normalnoeRaspredilenie[objectIndex][properties[objectIndex, 3]];//calculateTimeToMove(mu);
+                                        properties[objectIndex, 3]++;
                                         carsCounter++;
                                     }
                                     else
                                     {
-                                        nextRoadState[nextMoveRoadIndex, laneIndex] = Convert.ToInt32(per[objectIndex, 0]);
-                                        per[objectIndex, 1] = normalnoeRaspredilenie[objectIndex][per[objectIndex, 3]];//calculateTimeToMove(mu);
-                                        per[objectIndex, 3]++;
+                                        nextRoadState[nextMoveRoadIndex, laneIndex] = Convert.ToInt32(properties[objectIndex, 0]);
+                                        properties[objectIndex, 1] = normalnoeRaspredilenie[objectIndex][properties[objectIndex, 3]];//calculateTimeToMove(mu);
+                                        properties[objectIndex, 3]++;
                                     }
                                 }
-                                else if (temp[roadIndex, laneIndex] == per[objectIndex, 0])
+                                else if (temp[roadIndex, laneIndex] == properties[objectIndex, 0])
                                 {
-                                    nextRoadState[nextMoveRoadIndex, laneIndex] = Convert.ToInt32(per[objectIndex, 0]);
-                                    per[objectIndex, 1]--;
-                                    if (per[objectIndex, 1] < 0)
+                                    nextRoadState[nextMoveRoadIndex, laneIndex] = Convert.ToInt32(properties[objectIndex, 0]);
+                                    properties[objectIndex, 1]--;
+                                    if (properties[objectIndex, 1] < 0)
                                     {
-                                        per[objectIndex, 1] = normalnoeRaspredilenie[objectIndex][per[objectIndex, 3]];//calculateTimeToMove(mu);
-                                        per[objectIndex, 3]++;
+                                        properties[objectIndex, 1] = normalnoeRaspredilenie[objectIndex][properties[objectIndex, 3]];//calculateTimeToMove(mu);
+                                        properties[objectIndex, 3]++;
                                     }//костыль от -1 по времени
                                 }
                                 else
@@ -293,20 +298,20 @@ namespace Dsm3
 
                 int curTickPublicTransporntLaneChangeCount = 0;
                 int curTickCarsLaneChangeCount = 0;
-                for (int i = 0; i < per.GetLength(0); i++)
+                for (int i = 0; i < properties.GetLength(0); i++)
                 {
-                    if (isPublicTransport(per, i))
+                    if (isPublicTransport(properties, i))
                     {
-                        curTickPublicTransporntLaneChangeCount += per[i, 3];
+                        curTickPublicTransporntLaneChangeCount += properties[i, 3];
                     }
-                    else if (isCar(per,i))
+                    else if (isCar(properties, i))
                     {
-                        curTickCarsLaneChangeCount += per[i, 3];
+                        curTickCarsLaneChangeCount += properties[i, 3];
                     }
                 }
 
-                textBox9.Text = textBox9.Text + ";" + Convert.ToString(curTickPublicTransporntLaneChangeCount-prevTickPublicTransporntLaneChangeCount);
-                textBox10.Text = textBox10.Text + ";" + Convert.ToString(curTickCarsLaneChangeCount-prevTickCarsLaneChangeCount);
+                textBox9.Text = textBox9.Text + ";" + Convert.ToString(curTickPublicTransporntLaneChangeCount - prevTickPublicTransporntLaneChangeCount);
+                textBox10.Text = textBox10.Text + ";" + Convert.ToString(curTickCarsLaneChangeCount - prevTickCarsLaneChangeCount);
                 prevTickCarsLaneChangeCount = curTickCarsLaneChangeCount;
                 prevTickPublicTransporntLaneChangeCount = curTickPublicTransporntLaneChangeCount;
 
@@ -327,13 +332,13 @@ namespace Dsm3
                 }
                 dataGridView2.AutoResizeColumns();
 
-                dataGridView3.RowCount = per.GetLength(0);
-                dataGridView3.ColumnCount = per.GetLength(1);
-                for (int i = 0; i < per.GetLength(0); i++)
+                dataGridView3.RowCount = properties.GetLength(0);
+                dataGridView3.ColumnCount = properties.GetLength(1);
+                for (int i = 0; i < properties.GetLength(0); i++)
                 {
-                    for (int j = 0; j < per.GetLength(1); j++)
+                    for (int j = 0; j < properties.GetLength(1); j++)
                     {
-                        dataGridView3.Rows[i].Cells[j].Value = per[i, j];
+                        dataGridView3.Rows[i].Cells[j].Value = properties[i, j];
 
                     }
                 }
@@ -346,116 +351,181 @@ namespace Dsm3
             dataGridView2.Rows.Clear();
 
             int P = Convert.ToInt32(textBox1.Text);
-            int roadLanesCount = Convert.ToInt32(textBox1.Text)+2;
+            int roadLanesCount = Convert.ToInt32(textBox1.Text) + 2;
             int roadLength = Convert.ToInt32(textBox2.Text) / 5;
             double rho = Convert.ToDouble(textBox3.Text);//плотность
             double mu = Convert.ToDouble(textBox5.Text);//мю
             int v = Convert.ToInt32(textBox4.Text) / 5;
             int carsL = Convert.ToInt32(Math.Round(roadLength / 2 * rho));
             int publicTransportAmount = Convert.ToInt32(Math.Round(roadLength / 4 * rho));
-            
+
             int objectIndex;
             int publicTransportCounter = 0;
             int carsCounter = 0;
-            pert = new int[publicTransportAmount + carsL * (P - 1)];
+            carIndexToPropetyArray = new int[publicTransportAmount + carsL * (P - 1)];
 
-            for (int i = 0; i < pert.Length; i++)
+            for (int i = 0; i < carIndexToPropetyArray.Length; i++)
             {
-                pert[i] = Convert.ToInt32(per[i,0]);
+                carIndexToPropetyArray[i] = Convert.ToInt32(properties[i, 0]);
             }
 
-            int[,] nextRoadState = initNextRoadStateWithRoadBump(roadLength,roadLanesCount);
+            int[,] nextRoadState = initNextRoadStateWithRoadBump(roadLength, roadLanesCount);
 
             for (int roadIndex = 0; roadIndex < roadLength; roadIndex++)
             {
-                for (int laneIndex = 0; laneIndex < roadLanesCount; laneIndex++)
+                for (int laneIndex = 1; laneIndex < roadLanesCount - 1; laneIndex++)
                 {
-                    objectIndex = Array.IndexOf(pert, temp[roadIndex, laneIndex]);
+                    objectIndex = Array.IndexOf(carIndexToPropetyArray, temp[roadIndex, laneIndex]);
                     if (objectIndex != -1)
                     {
                         int secondPartRoadIndex = (roadIndex + 1) % temp.GetLength(0);
                         int nextMoveRoadIndex = (roadIndex + v) % temp.GetLength(0);
-                        if (isPublicTransport(per, objectIndex)) {
-                            
-                            if (isNextObjectSame(per, temp, objectIndex, nextMoveRoadIndex, laneIndex) && isTimeToChangeLane(per, objectIndex))
+
+                        if (isPublicTransport(properties, objectIndex)) {
+                            if (isNextObjectSame(properties, temp, objectIndex, nextMoveRoadIndex, laneIndex))
                             {
-                                if (publicTransportCouldMoveToRight(temp, roadIndex, secondPartRoadIndex, nextMoveRoadIndex, laneIndex))
-                                {
-                                    nextRoadState[nextMoveRoadIndex, laneIndex + 1] = Convert.ToInt32(per[objectIndex, 0]);
-                                    nextRoadState[(nextMoveRoadIndex+1) % temp.GetLength(0), laneIndex + 1] = Convert.ToInt32(per[objectIndex, 0]);
-                                    per[objectIndex, 1] = normalnoeRaspredilenie[objectIndex][per[objectIndex,3]];//calculateTimeToMove(mu);
-                                    per[objectIndex, 3]++;
-                                    publicTransportCounter++;
-                                    MessageBox.Show(temp.GetLength(0).ToString());
-                                }
-                                else if (publicTransportCouldMoveToLeft(temp, roadIndex, secondPartRoadIndex, nextMoveRoadIndex, laneIndex))
-                                {
-                                    nextRoadState[nextMoveRoadIndex, laneIndex - 1] = Convert.ToInt32(per[objectIndex, 0]);
-                                    nextRoadState[(nextMoveRoadIndex + 1) % temp.GetLength(0), laneIndex - 1] = Convert.ToInt32(per[objectIndex, 0]);
-                                    per[objectIndex, 1] = normalnoeRaspredilenie[objectIndex][per[objectIndex, 3]];//calculateTimeToMove(mu);
-                                    per[objectIndex, 3]++;
-                                    publicTransportCounter++;
+                                if (isTimeToChangeLane(properties, objectIndex)) {
+                                    if (publicTransportCouldMoveToRight(temp, roadIndex, secondPartRoadIndex, nextMoveRoadIndex, laneIndex)
+                                        && laneIndex + 2 < roadLanesCount && (temp[roadIndex, laneIndex + 2] == 0 || temp[roadIndex, laneIndex + 2] == 1)
+                                        && properties[objectIndex, 4] == 1 &&
+                                            isCarCanMove(roadIndex, laneIndex, 2, 1) 
+                                            &&
+                                            isCarCanMove(roadIndex, laneIndex, 1, 1)
+                                        )
+                                    {
+                                        nextRoadState[nextMoveRoadIndex, laneIndex + 1] = Convert.ToInt32(properties[objectIndex, 0]);
+                                        nextRoadState[(nextMoveRoadIndex + 1) % temp.GetLength(0), laneIndex + 1] = Convert.ToInt32(properties[objectIndex, 0]);
+                                        properties[objectIndex, 1] = normalnoeRaspredilenie[objectIndex][properties[objectIndex, 3]];//calculateTimeToMove(mu);
+                                        properties[objectIndex, 3]++;
+                                        publicTransportCounter++;
+                                    }
+                                    else if (publicTransportCouldMoveToLeft(temp, roadIndex, secondPartRoadIndex, nextMoveRoadIndex, laneIndex)
+                                        && laneIndex - 2 >= 0 && (temp[roadIndex, laneIndex - 2] == 0 || temp[roadIndex, laneIndex - 2] == 1)
+                                        && properties[objectIndex, 4] == 1 &&
+                                            isCarCanMove(roadIndex, laneIndex, 2, -1)
+                                            &&
+                                            isCarCanMove(roadIndex, laneIndex, 1, -1)
+                                        )
+                                    {
+                                        nextRoadState[nextMoveRoadIndex, laneIndex - 1] = Convert.ToInt32(properties[objectIndex, 0]);
+                                        nextRoadState[(nextMoveRoadIndex + 1) % temp.GetLength(0), laneIndex - 1] = Convert.ToInt32(properties[objectIndex, 0]);
+                                        properties[objectIndex, 1] = normalnoeRaspredilenie[objectIndex][properties[objectIndex, 3]];//calculateTimeToMove(mu);
+                                        properties[objectIndex, 3]++;
+                                        publicTransportCounter++;
+                                    }
+                                    else if (properties[objectIndex, 4] == 1 && isCarCanMove(roadIndex, laneIndex, 2, 0))
+                                    {
+                                        nextRoadState[nextMoveRoadIndex, laneIndex] = Convert.ToInt32(properties[objectIndex, 0]);
+                                        nextRoadState[(nextMoveRoadIndex + 1) % temp.GetLength(0), laneIndex] = Convert.ToInt32(properties[objectIndex, 0]);
+                                        properties[objectIndex, 1] = normalnoeRaspredilenie[objectIndex][properties[objectIndex, 3]];//calculateTimeToMove(mu);
+                                        properties[objectIndex, 3]++;
+                                    }
+                                    else
+                                    {
+                                        nextRoadState[roadIndex, laneIndex] = temp[roadIndex, laneIndex];
+                                        nextRoadState[(roadIndex + 1) % temp.GetLength(0), laneIndex] = temp[(roadIndex + 1) % temp.GetLength(0), laneIndex];
+                                        properties[objectIndex, 1]--;
+                                        if (properties[objectIndex, 1] < 0)
+                                        {
+                                            properties[objectIndex, 1] = normalnoeRaspredilenie[objectIndex][properties[objectIndex, 3]];//calculateTimeToMove(mu);
+                                            properties[objectIndex, 3]++;
+                                        } //костыль от -1 по времени
+                                    }
                                 }
                                 else
-                                {
-                                    nextRoadState[nextMoveRoadIndex, laneIndex] = Convert.ToInt32(per[objectIndex, 0]);
-                                    nextRoadState[(nextMoveRoadIndex + 1) % temp.GetLength(0), laneIndex] = Convert.ToInt32(per[objectIndex, 0]);
-                                    per[objectIndex, 1] = normalnoeRaspredilenie[objectIndex][per[objectIndex, 3]];//calculateTimeToMove(mu);
-                                    per[objectIndex, 3]++;
+                                { 
+                                    if (properties[objectIndex, 4] == 1 && isCarCanMove(roadIndex, laneIndex, 2, 0)) { 
+                                        nextRoadState[nextMoveRoadIndex, laneIndex] = Convert.ToInt32(properties[objectIndex, 0]);
+                                        nextRoadState[(nextMoveRoadIndex + 1) % temp.GetLength(0), laneIndex] = Convert.ToInt32(properties[objectIndex, 0]);
+                                        properties[objectIndex, 1]--;
+                                        if (properties[objectIndex, 1] < 0)
+                                        {
+                                            properties[objectIndex, 1] = normalnoeRaspredilenie[objectIndex][properties[objectIndex, 3]];//calculateTimeToMove(mu);
+                                            properties[objectIndex, 3]++;
+                                        } //костыль от -1 по времени
+                                    }
+                                    else
+                                    {
+                                        nextRoadState[roadIndex, laneIndex] = Convert.ToInt32(properties[objectIndex, 0]);
+                                        nextRoadState[(roadIndex + 1) % temp.GetLength(0), laneIndex] = Convert.ToInt32(properties[objectIndex, 0]);
+                                        properties[objectIndex, 1]--;
+                                        if (properties[objectIndex, 1] < 0)
+                                        {
+                                            properties[objectIndex, 1] = normalnoeRaspredilenie[objectIndex][properties[objectIndex, 3]];//calculateTimeToMove(mu);
+                                            properties[objectIndex, 3]++;
+                                        } //костыль от -1 по времени
+                                    }
                                 }
+
                             }
-                            else if (temp[roadIndex, laneIndex] == per[objectIndex, 0] && temp[secondPartRoadIndex, laneIndex] == per[objectIndex, 0])
-                            {
-                                nextRoadState[nextMoveRoadIndex, laneIndex] = Convert.ToInt32(per[objectIndex, 0]);
-                                nextRoadState[(nextMoveRoadIndex + 1) % temp.GetLength(0), laneIndex] = Convert.ToInt32(per[objectIndex, 0]);
-                                per[objectIndex, 1]--;
-                                if (per[objectIndex, 1] < 0)
-                                {
-                                    per[objectIndex, 1] = normalnoeRaspredilenie[objectIndex][per[objectIndex, 3]];//calculateTimeToMove(mu);
-                                    per[objectIndex, 3]++;
-                                } //костыль от -1 по времени
-                            }
+                            properties[objectIndex, 4] = Convert.ToInt32(rand.NextDouble() < 0.7);
                         }
 
-                        if (isCar(per,objectIndex)) { 
-                            if  (isTimeToChangeLane(per,objectIndex))
+                        if (isCar(properties, objectIndex)) {
+
+                            if (isTimeToChangeLane(properties, objectIndex))
                             {
-                                if (carCouldMoveToRight(temp, roadIndex, nextMoveRoadIndex, laneIndex))
+                                if (carCouldMoveToRight(temp, roadIndex, nextMoveRoadIndex, laneIndex)
+                                    && laneIndex + 2 < roadLanesCount && (temp[roadIndex, laneIndex + 2] == 0 || temp[roadIndex, laneIndex + 2] == 1)
+                                    && properties[objectIndex, 4] == 1 && isCarCanMove(roadIndex, laneIndex, 1, 1))
                                 {
-                                    nextRoadState[nextMoveRoadIndex, laneIndex + 1] = Convert.ToInt32(per[objectIndex, 0]);
-                                    per[objectIndex, 1] = normalnoeRaspredilenie[objectIndex][per[objectIndex, 3]];//calculateTimeToMove(mu);
-                                    per[objectIndex, 3]++;
+                                    nextRoadState[nextMoveRoadIndex, laneIndex + 1] = Convert.ToInt32(properties[objectIndex, 0]);
+                                    properties[objectIndex, 1] = normalnoeRaspredilenie[objectIndex][properties[objectIndex, 3]];//calculateTimeToMove(mu);
+                                    properties[objectIndex, 3]++;
                                     carsCounter++;
                                 }
-                                else if (carCouldMoveToLeft(temp, roadIndex, nextMoveRoadIndex, laneIndex))
+                                else if (carCouldMoveToLeft(temp, roadIndex, nextMoveRoadIndex, laneIndex)
+                                    && laneIndex - 2 >= 0 && (temp[roadIndex, laneIndex - 2] == 0 || temp[roadIndex, laneIndex - 2] == 1)
+                                    && properties[objectIndex, 4] == 1 && isCarCanMove(roadIndex, laneIndex, 1, -1))
                                 {
-                                    nextRoadState[nextMoveRoadIndex, laneIndex - 1] = Convert.ToInt32(per[objectIndex, 0]);
-                                    per[objectIndex, 1] = normalnoeRaspredilenie[objectIndex][per[objectIndex, 3]];//calculateTimeToMove(mu);
-                                    per[objectIndex, 3]++;
+                                    nextRoadState[nextMoveRoadIndex, laneIndex - 1] = Convert.ToInt32(properties[objectIndex, 0]);
+                                    properties[objectIndex, 1] = normalnoeRaspredilenie[objectIndex][properties[objectIndex, 3]];//calculateTimeToMove(mu);
+                                    properties[objectIndex, 3]++;
                                     carsCounter++;
+                                }
+                                else if (properties[objectIndex, 4] == 1 && isCarCanMove(roadIndex, laneIndex, 1, 0))
+                                {
+                                    nextRoadState[nextMoveRoadIndex, laneIndex] = Convert.ToInt32(properties[objectIndex, 0]);
+                                    properties[objectIndex, 1] = normalnoeRaspredilenie[objectIndex][properties[objectIndex, 3]];//calculateTimeToMove(mu);
+                                    properties[objectIndex, 3]++;
                                 }
                                 else
                                 {
-                                    nextRoadState[nextMoveRoadIndex, laneIndex] = Convert.ToInt32(per[objectIndex, 0]);
-                                    per[objectIndex, 1] = normalnoeRaspredilenie[objectIndex][per[objectIndex, 3]];//calculateTimeToMove(mu);
-                                    per[objectIndex, 3]++;
+                                    nextRoadState[roadIndex, laneIndex] = temp[roadIndex, laneIndex];
+                                    properties[objectIndex, 1]--;
+                                    if (properties[objectIndex, 1] < 0)
+                                    {
+                                        properties[objectIndex, 1] = normalnoeRaspredilenie[objectIndex][properties[objectIndex, 3]];//calculateTimeToMove(mu);
+                                        properties[objectIndex, 3]++;
+                                    } //костыль от -1 по времени
                                 }
                             }
-                            else if (temp[roadIndex, laneIndex] == per[objectIndex, 0])
+                            else 
                             {
-                                nextRoadState[nextMoveRoadIndex, laneIndex] = Convert.ToInt32(per[objectIndex, 0]);
-                                per[objectIndex, 1]--;
-                                if (per[objectIndex, 1] < 0)
+                                if (properties[objectIndex, 4] == 1 && isCarCanMove(roadIndex, laneIndex, 1, 0)){ 
+                                    nextRoadState[nextMoveRoadIndex, laneIndex] = temp[roadIndex, laneIndex];
+                                    properties[objectIndex, 1]--;
+                                    if (properties[objectIndex, 1] < 0)
+                                    {
+                                        properties[objectIndex, 1] = normalnoeRaspredilenie[objectIndex][properties[objectIndex, 3]];//calculateTimeToMove(mu);
+                                        properties[objectIndex, 3]++;
+                                    } //костыль от -1 по времени
+                                }
+                                else
                                 {
-                                    per[objectIndex, 1] = normalnoeRaspredilenie[objectIndex][per[objectIndex, 3]];//calculateTimeToMove(mu);
-                                    per[objectIndex, 3]++;
-                                }//костыль от -1 по времени
+                                    nextRoadState[roadIndex, laneIndex] = temp[roadIndex, laneIndex];
+                                    properties[objectIndex, 1]--;
+                                    if (properties[objectIndex, 1] < 0)
+                                    {
+                                        properties[objectIndex, 1] = normalnoeRaspredilenie[objectIndex][properties[objectIndex, 3]];//calculateTimeToMove(mu);
+                                        properties[objectIndex, 3]++;
+                                    } //костыль от -1 по времени
+                                }
                             }
-                            else
-                            {
-                                MessageBox.Show("ЛЕГКОВОВЙ" + (objectIndex+2).ToString());
-                            }
+                            properties[objectIndex, 4] = Convert.ToInt32(rand.NextDouble() < 0.7);
+
                         }
+                       
                     }
                 }
             }
@@ -480,18 +550,23 @@ namespace Dsm3
             }
             dataGridView2.AutoResizeColumns();
 
-            dataGridView3.RowCount = per.GetLength(0);
-            dataGridView3.ColumnCount = per.GetLength(1);
-            for (int i = 0; i < per.GetLength(0); i++)
+            dataGridView3.RowCount = properties.GetLength(0);
+            dataGridView3.ColumnCount = properties.GetLength(1);
+            for (int i = 0; i < properties.GetLength(0); i++)
             {
-                for (int j = 0; j < per.GetLength(1); j++)
+                for (int j = 0; j < properties.GetLength(1); j++)
                 {
-                    dataGridView3.Rows[i].Cells[j].Value = per[i, j];
-                    
+                    dataGridView3.Rows[i].Cells[j].Value = properties[i, j];
+
                 }
             }
             dataGridView3.AutoResizeColumns();
         }
+
+        /*private void move()
+        {
+
+        }*/
         private int[,] initNextRoadStateWithRoadBump(int roadLength, int roadLanesCount)
         {
             int[,] nextRoadState = new int[roadLength, roadLanesCount];
@@ -519,32 +594,32 @@ namespace Dsm3
             return Convert.ToInt32(Math.Round(-(1 / mu) * Math.Log(rand.NextDouble())));
         }
 
-        //TODO rename "per" to something with more sense
-        private bool isPublicTransport(int[,] per, int objectIndex)
+        //TODO rename "properties" to something with more sense
+        private bool isPublicTransport(int[,] properties, int objectIndex)
         {
-            return per[objectIndex, 2] == 1;
+            return properties[objectIndex, 2] == 1;
         }
 
-        //TODO rename "per" to something with more sense
+        //TODO rename "properties" to something with more sense
         //TODO Mb you should rename "Car" to something more acceptable in current context ?
-        private bool isCar(int[,] per, int objectIndex)
+        private bool isCar(int[,] properties, int objectIndex)
         {
-            return per[objectIndex, 2] == 2;
+            return properties[objectIndex, 2] == 2;
         }
 
-        private bool isTimeToChangeLane(int[,] per, int objectIndex)
+        private bool isTimeToChangeLane(int[,] properties, int objectIndex)
         {
-            return per[objectIndex, 1] == 0;
+            return properties[objectIndex, 1] == 0;
         }
-        private bool isNextObjectSame(int[,] per, int[,] temp, int objectIndex, int nextObjectIndex, int laneIndex)
+        private bool isNextObjectSame(int[,] properties, int[,] temp, int objectIndex, int nextObjectIndex, int laneIndex)
         {
-            return temp[nextObjectIndex, laneIndex] == per[objectIndex, 0];
+            return temp[nextObjectIndex, laneIndex] == properties[objectIndex, 0];
         }
         //temp[roadIndex, laneIndex]== temp[secondPartIndex, laneIndex] &&
         private bool publicTransportCouldMoveToRight(int[,] temp, int roadIndex, int secondPartIndex, int nextRoadIndex, int laneIndex)
         {
             int rightLaneIndex = laneIndex + 1;
-            return  temp[roadIndex, rightLaneIndex] == 0 && temp[secondPartIndex, rightLaneIndex] == 0
+            return temp[roadIndex, rightLaneIndex] == 0 && temp[secondPartIndex, rightLaneIndex] == 0
             && temp[nextRoadIndex, rightLaneIndex] == 0 && temp[(nextRoadIndex + 1) % temp.GetLength(0), rightLaneIndex] == 0;
         }
 
@@ -559,6 +634,23 @@ namespace Dsm3
         {
             int rightLaneIndex = laneIndex + 1;
             return temp[roadIndex, rightLaneIndex] == 0 && temp[nextRoadIndex, rightLaneIndex] == 0;
+        }
+        // проверяем на -1, так как попадаем в отбойник
+        private bool isForvardCarMoving(int roadIndex, int laneIndex, int roadOffSet, int laneOffSet)
+        {
+            int propIndex = Array.IndexOf(carIndexToPropetyArray, temp[(roadIndex + roadOffSet) % temp.GetLength(0), laneIndex + laneOffSet]);
+            return propIndex==-1 || properties[propIndex, 4] == 1;
+        }
+
+        private bool isRoadCellEmpty(int roadIndex, int laneIndex, int roadOffSet, int laneOffSet) {
+            //MessageBox.Show(""+ temp[(roadIndex + roadOffSet) % temp.GetLength(0), laneIndex + laneOffSet]);
+
+            return temp[(roadIndex + roadOffSet) % temp.GetLength(0), laneIndex + laneOffSet] == 0;
+        }
+
+        private bool isCarCanMove(int roadIndex, int laneIndex, int roadOffSet, int laneOffSet)
+        {
+            return isRoadCellEmpty(roadIndex, laneIndex, roadOffSet, laneOffSet) || isForvardCarMoving(roadIndex, laneIndex, roadOffSet, laneOffSet); 
         }
 
         private void dataGridView1_CellContentClick(object sender, DataGridViewCellEventArgs e)
