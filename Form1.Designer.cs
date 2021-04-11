@@ -65,6 +65,7 @@
             this.textBox13 = new System.Windows.Forms.TextBox();
             this.label16 = new System.Windows.Forms.Label();
             this.textBox14 = new System.Windows.Forms.TextBox();
+            this.textBox15 = new System.Windows.Forms.TextBox();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView2)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView3)).BeginInit();
@@ -85,9 +86,9 @@
             this.label2.AutoSize = true;
             this.label2.Location = new System.Drawing.Point(13, 43);
             this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(238, 13);
+            this.label2.Size = new System.Drawing.Size(224, 13);
             this.label2.TabIndex = 1;
-            this.label2.Text = "Укажите количество ячеек (длину дороги) (м)";
+            this.label2.Text = "Укажите количество ячеек (длину дороги) ";
             // 
             // label3
             // 
@@ -139,7 +140,7 @@
             this.textBox3.Name = "textBox3";
             this.textBox3.Size = new System.Drawing.Size(100, 20);
             this.textBox3.TabIndex = 7;
-            this.textBox3.Text = "0,5";
+            this.textBox3.Text = "0,1";
             // 
             // textBox4
             // 
@@ -170,7 +171,7 @@
             // 
             // button2
             // 
-            this.button2.Location = new System.Drawing.Point(16, 204);
+            this.button2.Location = new System.Drawing.Point(16, 214);
             this.button2.Name = "button2";
             this.button2.Size = new System.Drawing.Size(166, 23);
             this.button2.TabIndex = 11;
@@ -228,7 +229,7 @@
             this.textBox6.Name = "textBox6";
             this.textBox6.Size = new System.Drawing.Size(100, 20);
             this.textBox6.TabIndex = 17;
-            this.textBox6.Text = "100";
+            this.textBox6.Text = "2000";
             // 
             // label7
             // 
@@ -349,9 +350,9 @@
             this.label14.AutoSize = true;
             this.label14.Location = new System.Drawing.Point(114, 604);
             this.label14.Name = "label14";
-            this.label14.Size = new System.Drawing.Size(171, 13);
+            this.label14.Size = new System.Drawing.Size(177, 13);
             this.label14.TabIndex = 32;
-            this.label14.Text = "Интенсивность на каждом шаге";
+            this.label14.Text = "Интенсивность каждые 10 шагов";
             // 
             // label15
             // 
@@ -386,11 +387,19 @@
             this.textBox14.Size = new System.Drawing.Size(370, 20);
             this.textBox14.TabIndex = 35;
             // 
+            // textBox15
+            // 
+            this.textBox15.Location = new System.Drawing.Point(403, 620);
+            this.textBox15.Name = "textBox15";
+            this.textBox15.Size = new System.Drawing.Size(370, 20);
+            this.textBox15.TabIndex = 37;
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1895, 654);
+            this.Controls.Add(this.textBox15);
             this.Controls.Add(this.label16);
             this.Controls.Add(this.textBox14);
             this.Controls.Add(this.label15);
@@ -478,6 +487,7 @@
         private System.Windows.Forms.TextBox textBox13;
         private System.Windows.Forms.Label label16;
         private System.Windows.Forms.TextBox textBox14;
+        private System.Windows.Forms.TextBox textBox15;
     }
 }
 
